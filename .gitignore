@@ -18,6 +18,13 @@ _print_*.pdf
 _p030*.html
 _p030*.pdf
 
+# --- Архивы ---
+*.7z
+*.zip
+*.rar
+*.tar
+*.gz
+
 # --- Конфиг preview/IDE/OS ---
 .claude/
 .vscode/
