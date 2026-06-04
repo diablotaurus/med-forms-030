@@ -1,5 +1,9 @@
 # Карты несовершеннолетних — веб-приложение
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.x-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.3%2B-000000.svg?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+
 Веб-версия двух учётных форм:
 - **N 030/у-Д/с** — «Карта диспансеризации несовершеннолетнего»;
 - **N 030-ПО/у** — «Карта профилактического медицинского осмотра несовершеннолетнего».
