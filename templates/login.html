@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="login-wrap">
+    <form class="login-card" method="post" action="{{ url_for('login') }}">
+        <h1>Учётная форма № 030</h1>
+        <p class="muted small">Вход в систему</p>
+
+        {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+
+        <label>Логин
+            <input type="text" name="username" autocomplete="username" autofocus required>
+        </label>
+        <label>Пароль
+            <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit" class="btn btn-primary login-btn">Войти</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}Карта профилактического осмотра{% if form_id %} №{{ form_id }}{% endif %}{% endblock %}
+{% block body_class %}{% if mode == 'print' %}print-mode{% endif %}{% endblock %}
+
+{# ---------- Макросы ---------- #}
+{% macro cb(name, label) -%}
+<label class="cb"><input type="checkbox" name="{{ name }}"><span>{{ label }}</span></label>
+{%- endmacro %}
+
+{% macro fld(name, cls='') -%}
+<input type="text" class="fld {{ cls }}" name="{{ name }}">
+{%- endmacro %}
+
+{% macro ta(name, rows=2, cls='') -%}
+<textarea class="ta {{ cls }}" name="{{ name }}" rows="{{ rows }}"></textarea>
+{%- endmacro %}
+
+{% block content %}
+<div class="toolbar no-print">
+    <a class="btn" href="{{ url_for('list_forms', ftype=form_type) }}">← К списку</a>
+    {% if mode == 'print' %}
+        <button class="btn btn-primary" type="button" onclick="window.print()">🖨 Печать</button>
+        <a class="btn" href="{{ url_for('form_edit', form_id=form_id) }}">Редактировать</a>
+    {% else %}
+        <button class="btn btn-primary" type="submit" form="cardForm">💾 Сохранить</button>
+        {% if mode == 'edit' %}
+        <a class="btn" target="formPrint" href="{{ url_for('form_print', form_id=form_id) }}">🖨 Печать</a>
+        {% endif %}
+    {% endif %}
+    <span class="muted toolbar-title">Учётная форма N 030-ПО/у {% if form_id %}· карта №{{ form_id }}{% endif %}</span>
+    {% if mode != 'print' %}
+    <a class="user-link" href="{{ url_for('change_password') }}" title="Сменить пароль">{{ session.user }}</a>
+    <a class="btn" href="{{ url_for('logout') }}">Выйти</a>
+    {% endif %}
+</div>
+
+<form id="cardForm" method="post"
+      action="{% if mode == 'new' %}{{ url_for('form_create', ftype=form_type) }}{% else %}{{ url_for('form_update', form_id=form_id) }}{% endif %}">
+<div class="sheet">
+
+    {% if errors %}
+    <div class="val-summary" id="server-validation-summary">
+        <b>Данные не сохранены. Проверьте правильность заполнения:</b>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    {# ============================ ШАПКА ============================ #}
+    <div class="form-header">
+        <div class="fh-left">
+            <div class="muted small">Наименование и адрес медицинской организации, фамилия, имя, отчество
+                (при наличии) индивидуального предпринимателя и адрес осуществления медицинской
+                деятельности, ОГРН (ОГРНИП):</div>
+            {{ ta('org_info', 3, 'w100') }}
+        </div>
+        <div class="fh-right">
+            <div>Код формы по ОКУД {{ fld('okud', 'w90') }}</div>
+            <div class="muted">Медицинская документация</div>
+            <div class="b">Учётная форма N 030-ПО/у</div>
+            <div class="muted">Утверждена приказом Минздрава России</div>
+            <div class="muted">от «__» __________ 202_ г. N __</div>
+        </div>
+    </div>
+
+    <h1 class="doc-title">Карта профилактического медицинского осмотра несовершеннолетнего</h1>
+
+    {# ============================ 1 ============================ #}
+    <div class="sec"><span class="num">1.</span> Фамилия, имя, отчество (при наличии) несовершеннолетнего:</div>
+    {{ fld('patient_fio', 'w100') }}
+    <div class="row">Пол: {{ cb('pol_m', 'мужской') }} / {{ cb('pol_zh', 'женский') }}</div>
+    <div class="row">Дата рождения (дд.мм.гггг.): {{ fld('birth_date', 'w180 js-date') }}</div>
+
+    {# ============================ 2 ============================ #}
+    <div class="sec"><span class="num">2.</span> Полис обязательного медицинского страхования: N {{ fld('polis_n', 'w200') }}</div>
+    <div class="sub">Страховая медицинская организация:</div>
+    {{ ta('smo', 2, 'w100') }}
+
+    {# ============================ 3 ============================ #}
+    <div class="sec"><span class="num">3.</span> Страховой номер индивидуального лицевого счёта (СНИЛС): {{ fld('snils', 'w200 js-snils') }}</div>
+
+    {# ============================ 4 ============================ #}
+    <div class="sec"><span class="num">4.</span> Адрес:</div>
+    <div class="sub">места жительства (постоянной регистрации):</div>
+    {{ ta('addr_reg', 2, 'w100') }}
+    <div class="sub">фактического проживания (пребывания):</div>
+    {{ ta('addr_fact', 2, 'w100') }}
+
+    {# ============================ 5 ============================ #}
+    <div class="sec"><span class="num">5.</span> Категория:</div>
+    <div class="opts">
+        {{ cb('cat_1', 'ребёнок-сирота;') }}
+        {{ cb('cat_2', 'ребёнок, оставшийся без попечения родителей;') }}
+        {{ cb('cat_3', 'ребёнок, находящийся в трудной жизненной ситуации;') }}
+        {{ cb('cat_4', 'нет категории.') }}
+    </div>
+
+    {# ============================ 6 ============================ #}
+    <div class="sec"><span class="num">6.</span> Полное наименование медицинской организации, в которой несовершеннолетний
+        получает первичную медико-санитарную помощь:</div>
+    {{ ta('mo_pmsp_name', 2, 'w100') }}
+
+    {# ============================ 7 ============================ #}
+    <div class="sec"><span class="num">7.</span> Адрес места нахождения медицинской организации, в которой несовершеннолетний
+        получает первичную медико-санитарную помощь:</div>
+    {{ ta('mo_pmsp_addr', 2, 'w100') }}
+
+    {# ============================ 8 ============================ #}
+    <div class="sec"><span class="num">8.</span> Полное наименование образовательной организации, в которой обучается несовершеннолетний:</div>
+    {{ ta('edu_name', 2, 'w100') }}
+
+    {# ============================ 9 ============================ #}
+    <div class="sec"><span class="num">9.</span> Адрес места нахождения образовательной организации, в которой обучается несовершеннолетний:</div>
+    {{ ta('edu_addr', 2, 'w100') }}
+
+    {# ============================ 10 ============================ #}
+    <div class="sec"><span class="num">10.</span> Дата начала профилактического медицинского осмотра (дд.мм.гггг.): {{ fld('date_osmotr_start', 'w180 js-date') }}</div>
+
+    {# ============================ 11 ============================ #}
+    <div class="sec"><span class="num">11.</span> Полное наименование и адрес места нахождения медицинской организации,
+        проводившей профилактический осмотр:</div>
+    {{ ta('mo_osmotr', 2, 'w100') }}
+
+    {# ============================ 12 ============================ #}
+    <div class="sec"><span class="num">12.</span> Оценка физического развития с учётом возраста на момент профилактического осмотра:</div>
+    <div class="row">{{ fld('age12_days', 'w60') }} (число дней) {{ fld('age12_months', 'w60') }} (месяцев) {{ fld('age12_years', 'w60') }} лет.</div>
+    <div class="sub">12.1. Для детей в возрасте 0 – 4 лет:</div>
+    <div class="row indent">масса (кг) {{ fld('mass12_1', 'w70') }} ; рост (см) {{ fld('height12_1', 'w70') }} ; окружность головы (см) {{ fld('head12_1', 'w70') }} ;</div>
+    <div class="row indent">физическое развитие: {{ cb('fr121_norm', 'нормальное,') }} {{ cb('fr121_naru', 'с нарушениями:') }}</div>
+    <div class="opts indent">
+        {{ cb('fr121_def', 'дефицит массы тела;') }}
+        {{ cb('fr121_izb', 'избыток массы тела;') }}
+        {{ cb('fr121_low', 'низкий рост;') }}
+        {{ cb('fr121_high', 'высокий рост.') }}
+    </div>
+    <div class="sub">12.2. Для детей в возрасте 5 – 17 лет включительно:</div>
+    <div class="row indent">масса (кг) {{ fld('mass12_2', 'w70') }} ; рост (см) {{ fld('height12_2', 'w70') }} ;</div>
+    <div class="row indent">физическое развитие: {{ cb('fr122_norm', 'нормальное,') }} {{ cb('fr122_naru', 'с нарушениями:') }}</div>
+    <div class="opts indent">
+        {{ cb('fr122_def', 'дефицит массы тела;') }}
+        {{ cb('fr122_izb', 'избыток массы тела;') }}
+        {{ cb('fr122_low', 'низкий рост;') }}
+        {{ cb('fr122_high', 'высокий рост.') }}
+    </div>
+    <div class="sub">12.3. Для всех детей:</div>
+    <div class="row indent">12.3.1. Индекс массы тела (ИМТ) {{ fld('imt', 'w120') }} ;</div>
+    <div class="row indent">12.3.2. SDS ИМТ {{ fld('sds_imt', 'w120') }} .</div>
+
+    {# ============================ 13 ============================ #}
+    <div class="sec"><span class="num">13.</span> Оценка психического развития (состояния):</div>
+    <div class="sub">13.1. Для детей в возрасте 0 – 4 лет:</div>
+    <div class="row indent">жалобы:</div>
+    {{ ta('j131', 2, 'w100') }}
+    <div class="row indent">познавательная функция (возраст развития) {{ fld('pozn131', 'w300') }}</div>
+    <div class="row indent">нарушение когнитивных функций {{ cb('kogn131_net', 'нет') }} / {{ cb('kogn131_da', 'да') }} {{ fld('kogn131_txt', 'w200') }}</div>
+    <div class="row indent">нарушение учебных навыков {{ cb('ucheb131_net', 'нет') }} / {{ cb('ucheb131_da', 'да') }} {{ fld('ucheb131_txt', 'w200') }}</div>
+    <div class="row indent">моторная функция (возраст развития) {{ fld('motor131', 'w300') }}</div>
+    <div class="row indent">эмоциональные нарушения {{ cb('emo131_net', 'нет') }} / {{ cb('emo131_da', 'да') }} {{ fld('emo131_txt', 'w200') }}</div>
+    <div class="row indent">предречевое развитие (гуление, лепет) {{ cb('predr131_da', 'да') }} / {{ cb('predr131_neakt', 'не активно') }} / {{ cb('predr131_net', 'нет;') }}</div>
+    <div class="row indent">речевое развитие (возраст развития) {{ fld('rech131', 'w300') }}</div>
+    <div class="row indent">понимание речи {{ cb('pon131_da', 'да') }} / {{ cb('pon131_chast', 'частично') }} / {{ cb('pon131_net', 'нет;') }}</div>
+    <div class="row indent">активная речь {{ cb('akt131_da', 'да') }} / {{ cb('akt131_nepol', 'не пользуется') }} / {{ cb('akt131_net', 'нет;') }}</div>
+    <div class="row indent">нарушение коммуникативных навыков {{ cb('komm131_net', 'нет') }} / {{ cb('komm131_da', 'да') }} {{ fld('komm131_txt', 'w200') }}</div>
+    <div class="row indent">сенсорное развитие {{ cb('sens131_razv', 'развито') }} / {{ cb('sens131_chast', 'частично развито') }} / {{ cb('sens131_ne', 'не развито.') }}</div>
+    <div class="sub">13.2. Для детей в возрасте 5 – 17 лет:</div>
+    <div class="row indent">жалобы:</div>
+    {{ ta('j132', 2, 'w100') }}
+    <div class="row indent">внешний вид {{ cb('vid132_opr', 'опрятен') }} / {{ cb('vid132_neopr', 'не опрятен;') }}</div>
+    <div class="row indent">доступен к контакту {{ cb('dost132_da', 'да') }} / {{ cb('dost132_chast', 'частично доступен') }} / {{ cb('dost132_net', 'нет;') }}</div>
+    <div class="row indent">фон настроения {{ cb('fon132_rov', 'ровный') }} / {{ cb('fon132_lab', 'лабильный') }} / {{ cb('fon132_disf', 'дисфоричный') }} / {{ cb('fon132_trev', 'тревожный;') }}</div>
+    <div class="row indent">обманы восприятия {{ cb('obman132_da', 'да') }} / {{ cb('obman132_net', 'нет;') }}</div>
+    <div class="row indent">интеллектуальная функция {{ cb('intel132_bez', 'без особенностей') }} / {{ cb('intel132_naru', 'нарушена;') }}</div>
+    <div class="row indent">нарушения когнитивных функций {{ cb('kogn132_net', 'нет') }} / {{ cb('kogn132_da', 'да;') }}</div>
+    <div class="row indent">нарушение учебных навыков {{ cb('ucheb132_da', 'да') }} / {{ cb('ucheb132_net', 'нет;') }}</div>
+    <div class="row indent">суицидальные наклонности {{ cb('suic132_da', 'да') }} / {{ cb('suic132_net', 'нет;') }}</div>
+    <div class="row indent">самоповреждения {{ cb('samo132_est', 'есть') }} / {{ cb('samo132_net', 'нет;') }}</div>
+    <div class="row indent">социальная сфера {{ cb('soc132_naru', 'нарушена') }} / {{ cb('soc132_ne', 'не нарушена.') }}</div>
+
+    {# ============================ 14 ============================ #}
+    <div class="sec"><span class="num">14.</span> Оценка полового развития (с 10 лет):</div>
+    <div class="row indent">14.1. Половая формула мальчика: Ax {{ fld('ax_m', 'w50') }} P {{ fld('p_m', 'w50') }} G {{ fld('g_m', 'w50') }} Te {{ fld('te_m', 'w50') }} ;</div>
+    <div class="row indent">14.2. Половая формула девочки: P {{ fld('p_d', 'w50') }} Ax {{ fld('ax_d', 'w50') }} Ma {{ fld('ma_d', 'w50') }} Me {{ fld('me_d', 'w50') }} ;</div>
+    <div class="sub">14.3. Характеристика менструальной функции:</div>
+    <div class="row indent">menarche (лет, месяцев) {{ fld('menarche', 'w160') }} ;</div>
+    <div class="row indent">menses (характеристика): {{ cb('menses_reg', 'регулярные') }} / {{ cb('menses_nereg', 'нерегулярные,') }}
+        {{ cb('menses_obil', 'обильные') }} / {{ cb('menses_umer', 'умеренные') }} / {{ cb('menses_skud', 'скудные') }}
+        {{ cb('menses_bol', 'болезненные') }} / {{ cb('menses_bezbol', 'безболезненные.') }}</div>
+
+    {# ============================ 15 ============================ #}
+    <div class="sec"><span class="num">15.</span> Состояние здоровья до проведения настоящего профилактического осмотра:</div>
+    <div class="row indent">15.1. Практически здоров (код по МКБ): {{ fld('zdorov15', 'w200') }}</div>
+
+    <div class="diag-section">
+        <div class="diag-head no-print">
+            <span class="b">Диагнозы (раздел 15)</span>
+            <button type="button" class="btn btn-add" data-add="15">+ Добавить диагноз</button>
+            <span class="muted small">не более 10</span>
+        </div>
+        <div id="diag15_container"></div>
+    </div>
+
+    <div class="row"><span class="b" id="group15_label">15.7.</span> Группа здоровья:
+        {{ cb('group15_1', 'I') }} {{ cb('group15_2', 'II') }} {{ cb('group15_3', 'III') }}
+        {{ cb('group15_4', 'IV') }} {{ cb('group15_5', 'V.') }}</div>
+    <div class="row"><span class="b" id="phys15_label">15.8.</span> Медицинская группа для занятий физической культурой:</div>
+    <div class="opts">
+        {{ cb('phys15_main', 'основная группа;') }}
+        {{ cb('phys15_prep', 'подготовительная группа;') }}
+        <div class="dis-row">{{ cb('phys15_special', 'специальная группа:') }} {{ cb('phys15_a', 'подгруппа «А»,') }} {{ cb('phys15_b', 'подгруппа «Б»;') }}</div>
+        {{ cb('phys15_not', 'не допущен.') }}
+    </div>
+
+    {# ============================ 16 ============================ #}
+    <div class="sec"><span class="num">16.</span> Состояние здоровья по результатам проведения настоящего профилактического осмотра:</div>
+    <div class="row indent">16.1. Практически здоров (код по МКБ): {{ fld('zdorov16', 'w200') }}</div>
+
+    <div class="diag-section">
+        <div class="diag-head no-print">
+            <span class="b">Диагнозы (раздел 16)</span>
+            <button type="button" class="btn btn-add" data-add="16">+ Добавить диагноз</button>
+            <span class="muted small">не более 10</span>
+        </div>
+        <div id="diag16_container"></div>
+    </div>
+
+    {# ---- 16.7 Инвалидность ---- #}
+    <div class="row"><span class="b" id="inv_label_po">16.7.</span> Инвалидность: {{ cb('inv_net', 'нет') }} / {{ cb('inv_da', 'да:') }}
+        {{ cb('inv_birth', 'с рождения;') }} {{ cb('inv_acquired', 'приобретённая.') }}</div>
+    <div class="row indent">установлена впервые (дата (дд.мм.гггг.)): {{ fld('inv_first_date_po', 'w160 js-date') }} ;</div>
+    <div class="row indent">дата последнего освидетельствования (дд.мм.гггг.): {{ fld('inv_last_date_po', 'w160 js-date') }} .</div>
+
+    {# ---- 16.8 Группа здоровья ---- #}
+    <div class="row"><span class="b" id="group16_label_po">16.8.</span> Группа здоровья:
+        {{ cb('group16_1', 'I') }} {{ cb('group16_2', 'II') }} {{ cb('group16_3', 'III') }}
+        {{ cb('group16_4', 'IV') }} {{ cb('group16_5', 'V.') }}</div>
+
+    {# ---- 16.9 Физкультура ---- #}
+    <div class="row"><span class="b" id="phys16_label_po">16.9.</span> Медицинская группа для занятий физической культурой:</div>
+    <div class="opts">
+        {{ cb('phys16_main', 'основная группа;') }}
+        {{ cb('phys16_prep', 'подготовительная группа;') }}
+        <div class="dis-row">{{ cb('phys16_special', 'специальная группа:') }} {{ cb('phys16_a', '«А»') }} / {{ cb('phys16_b', '«Б»;') }}</div>
+        {{ cb('phys16_not', 'не допущен.') }}
+    </div>
+
+    {# ============================ 17 ============================ #}
+    <div class="sec"><span class="num">17.</span> Рекомендации по формированию здорового образа жизни, режиму дня,
+        питанию, физическому развитию, иммунопрофилактике, занятиям физической культурой:</div>
+    {{ ta('r17', 12, 'w100 big') }}
+
+    {# ============================ 18 ============================ #}
+    <div class="sec"><span class="num">18.</span> Рекомендации по проведению диспансерного наблюдения, лечению,
+        медицинской реабилитации и санаторно-курортному лечению:</div>
+    {{ ta('r18', 12, 'w100 big') }}
+
+    {# ============================ ПОДПИСИ ============================ #}
+    <div class="signs">
+        <div class="sign-block">
+            <div>Врач, ответственный за проведение профилактического осмотра:</div>
+            <div class="sign-line">
+                <span>{{ fld('sig_doctor', 'w150') }}<br><span class="muted small">(подпись)</span></span>
+                <span>{{ fld('fio_doctor', 'w300') }}<br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
+            </div>
+        </div>
+        <div class="sign-block">
+            <div>Руководитель медицинской организации:</div>
+            <div class="sign-line">
+                <span>{{ fld('sig_head', 'w150') }}<br><span class="muted small">(подпись)</span></span>
+                <span>{{ fld('fio_head', 'w300') }}<br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
+            </div>
+        </div>
+        <div class="row">Дата заполнения: {{ fld('date_fill', 'w200 js-date') }}</div>
+        <div class="row">М.П. (при наличии)</div>
+    </div>
+
+</div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.FORM_DATA = {{ data | tojson }};
+    window.FORM_MODE = "{{ mode }}";
+</script>
+<script src="{{ url_for('static', filename='js/form_030po.js') }}"></script>
+{% endblock %}

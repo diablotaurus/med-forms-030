@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Список карт — {{ form_types[current_type]["short"] }}{% endblock %}
+{% block content %}
+<div class="page">
+    <div class="topbar">
+        <h1>Карты несовершеннолетних</h1>
+        <div class="topbar-actions">
+            <a class="user-link" href="{{ url_for('change_password') }}" title="Сменить пароль">{{ session.user }}</a>
+            <a class="btn" href="{{ url_for('logout') }}">Выйти</a>
+        </div>
+    </div>
+
+    {# ----- вкладки переключения форм ----- #}
+    <div class="tabs">
+        {% for key, meta in form_types.items() %}
+        <a class="tab {% if key == current_type %}active{% endif %}"
+           href="{{ url_for('list_forms', ftype=key) }}">{{ meta["short"] }}</a>
+        {% endfor %}
+        <a class="tab tab-settings" href="{{ url_for('settings') }}">⚙ Настройки</a>
+    </div>
+
+    <div class="tab-bar">
+        <p class="muted tab-title">{{ form_types[current_type]["title"] }} · учётная форма N {{ form_types[current_type]["short"] }}</p>
+        <a class="btn btn-primary" href="{{ url_for('form_new', ftype=current_type) }}">+ Новая карта</a>
+    </div>
+
+    {% if forms %}
+    <table class="list">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Ф.И.О. несовершеннолетнего</th>
+                <th>Дата рождения</th>
+                <th>Создана</th>
+                <th>Изменена</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in forms %}
+            <tr>
+                <td>{{ f["id"] }}</td>
+                <td>{{ f["patient_fio"] or "—" }}</td>
+                <td>{{ f["birth_date"] or "—" }}</td>
+                <td>{{ f["created_at"] }}</td>
+                <td>{{ f["updated_at"] }}</td>
+                <td class="actions">
+                    <a class="btn" href="{{ url_for('form_edit', form_id=f['id']) }}">Открыть</a>
+                    <a class="btn" target="formPrint" href="{{ url_for('form_print', form_id=f['id']) }}">Печать</a>
+                    <form method="post" action="{{ url_for('form_delete', form_id=f['id']) }}"
+                          onsubmit="return confirm('Удалить карту №{{ f['id'] }}?');" style="display:inline">
+                        <button class="btn btn-danger" type="submit">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Пока нет ни одной карты этого типа. Нажмите «Новая карта», чтобы создать первую.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Настройки{% endblock %}
+{% block content %}
+<div class="page">
+    <div class="topbar">
+        <h1>Настройки</h1>
+        <div class="topbar-actions">
+            <a class="user-link" href="{{ url_for('change_password') }}" title="Сменить пароль">{{ session.user }}</a>
+            <a class="btn" href="{{ url_for('logout') }}">Выйти</a>
+        </div>
+    </div>
+
+    <div class="tabs">
+        {% for key, meta in form_types.items() %}
+        <a class="tab" href="{{ url_for('list_forms', ftype=key) }}">{{ meta["short"] }}</a>
+        {% endfor %}
+        <a class="tab tab-settings active" href="{{ url_for('settings') }}">⚙ Настройки</a>
+    </div>
+
+    <form method="post" action="{{ url_for('settings') }}" class="settings-form">
+        {% if success %}<div class="login-success">{{ success }}</div>{% endif %}
+
+        <label class="settings-label" for="org_info">
+            Наименование и адрес медицинской организации, фамилия, имя, отчество (при наличии)
+            индивидуального предпринимателя и адрес осуществления медицинской деятельности,
+            ОГРН (ОГРНИП):
+        </label>
+        <textarea id="org_info" name="org_info" class="ta w100" rows="4">{{ org_info }}</textarea>
+        <p class="muted small">Это значение будет автоматически подставляться в шапку каждой новой
+            карты (обеих форм). На уже сохранённые карты не влияет.</p>
+
+        <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+    </form>
+</div>
+{% endblock %}

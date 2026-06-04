@@ -1,0 +1,27 @@
+# --- Данные и секреты (НЕ публиковать) ---
+base.db
+*.db
+secret.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Временные файлы печати/отладки ---
+server.log
+_print_*.html
+_print_*.pdf
+_p030*.html
+_p030*.pdf
+
+# --- Конфиг preview/IDE/OS ---
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
