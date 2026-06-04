@@ -8,7 +8,9 @@
 | `start.ps1` / `start.bat` | Запуск сервера (waitress) в окне (Ctrl+C — остановка) |
 | `update.ps1` / `update.bat` | **Ручное обновление с GitHub** (бэкап БД → git pull → зависимости → перезапуск) |
 | `backup.ps1` / `backup.bat` | Ручная резервная копия базы `base.db` в папку `backups\` |
-| `install-service.ps1` | Установка как службы Windows (автозапуск, фон) — нужен NSSM |
+| `install-task.ps1` / `install-task.bat` | **Автозапуск через Планировщик заданий (без NSSM, рекомендуется)** |
+| `uninstall-task.ps1` | Удаление задачи автозапуска |
+| `install-service.ps1` | Установка как службы Windows (альтернатива) — нужен NSSM |
 | `uninstall-service.ps1` | Удаление службы |
 
 > Приложение обслуживается сервером **waitress** (не встроенным сервером Flask).
@@ -59,10 +61,31 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 (локально — `http://127.0.0.1:5000`). Вход по умолчанию: **admin / admin** —
 сразу смените пароль (клик по имени пользователя).
 
-**Вариант Б — как служба Windows (рекомендуется для постоянной работы):**
+**Вариант Б — автозапуск через Планировщик заданий (рекомендуется, без доп. ПО):**
 
-1. Скачайте **NSSM**: <https://nssm.cc/download>, распакуйте `nssm.exe`
-   (например, в `C:\nssm\`).
+В окне PowerShell **от имени администратора**:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-task.ps1
+```
+
+(или дважды кликните `scripts\install-task.bat` — он сам запросит права администратора;
+другой порт: `... install-task.ps1 -Port 8080`).
+
+Приложение будет запускаться автоматически при загрузке сервера и работать в фоне.
+Управление:
+
+```powershell
+Start-ScheduledTask -TaskName med-forms-030
+Stop-ScheduledTask  -TaskName med-forms-030
+```
+
+Удалить автозапуск: `scripts\uninstall-task.ps1`.
+
+**Вариант В — как служба Windows (альтернатива, нужен NSSM):**
+
+1. Скачайте **NSSM**: <https://nssm.cc/download> (или `winget install NSSM.NSSM`),
+   распакуйте `nssm.exe` (например, в `C:\nssm\`).
 2. В окне PowerShell **от имени администратора**:
 
    ```powershell
@@ -70,13 +93,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
    ```
 
    Служба `med-forms-030` будет запускаться автоматически. Логи — в `logs\service.log`.
-   Управление:
-
-   ```powershell
-   Restart-Service med-forms-030
-   Stop-Service med-forms-030
-   Start-Service med-forms-030
-   ```
+   Управление: `Restart-Service med-forms-030`, `Stop-Service`, `Start-Service`.
 
 ---
 
@@ -94,7 +111,11 @@ powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 1. создаёт **резервную копию** `base.db` в папке `backups\`;
 2. забирает последнюю версию кода из GitHub (`git reset --hard origin/main`);
 3. обновляет зависимости;
-4. перезапускает службу (если установлена).
+4. перезапускает приложение — службу Windows или задачу Планировщика (что настроено).
+
+> Если автозапуск настроен через **Планировщик** (`install-task.ps1`), запускайте
+> `update.ps1` **от имени администратора** — иначе скрипт не сможет перезапустить
+> задачу.
 
 > Данные (`base.db`, `secret.key`, `backups\`, `logs\`) при обновлении
 > **не затрагиваются** — они не отслеживаются git. Обновляется только код.

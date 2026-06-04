@@ -21,6 +21,7 @@
     python serve.py
 """
 import os
+import sys
 
 from waitress import serve
 
@@ -30,6 +31,9 @@ if __name__ == "__main__":
     init_db()
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", "5000"))
+    # порт можно передать первым аргументом командной строки: python serve.py 8080
+    if len(sys.argv) > 1 and sys.argv[1].isdigit():
+        port = int(sys.argv[1])
     threads = int(os.environ.get("THREADS", "8"))
     print(f"med-forms-030: запуск на http://{host}:{port} (threads={threads})")
     serve(app, host=host, port=port, threads=threads)

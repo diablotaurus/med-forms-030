@@ -1,7 +1,10 @@
 ﻿# =====================================================================
 #  med-forms-030 — ручное обновление с GitHub
 #  Делает резервную копию базы, забирает последнюю версию кода из
-#  репозитория, обновляет зависимости и перезапускает службу (если есть).
+#  репозитория, обновляет зависимости и перезапускает приложение —
+#  службу Windows (NSSM) или задачу Планировщика, смотря что настроено.
+#  Если используется автозапуск через Планировщик, запускайте этот скрипт
+#  от имени администратора.
 #
 #  Запуск:  powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 #
@@ -34,11 +37,18 @@ if (Test-Path "base.db") {
 $before = (git rev-parse --short HEAD)
 Write-Host "Текущая версия: $before"
 
-# 3) Остановить службу на время обновления (если установлена)
-$svc = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-if ($svc -and $svc.Status -eq "Running") {
-    Write-Host "Останавливаю службу $serviceName ..."
-    Stop-Service $serviceName
+# 3) Определить способ автозапуска и остановить приложение на время обновления
+$svc  = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+$task = Get-ScheduledTask -TaskName $serviceName -ErrorAction SilentlyContinue
+if ($svc) {
+    if ($svc.Status -eq "Running") {
+        Write-Host "Останавливаю службу $serviceName ..."
+        Stop-Service $serviceName
+        Start-Sleep -Seconds 1
+    }
+} elseif ($task) {
+    Write-Host "Останавливаю задачу Планировщика $serviceName ..."
+    Stop-ScheduledTask -TaskName $serviceName -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 1
 }
 
@@ -58,13 +68,18 @@ if ($before -eq $after) {
 Write-Host "Обновление зависимостей ..."
 & ".\.venv\Scripts\pip.exe" install -r requirements.txt
 
-# 6) Запустить службу обратно / подсказать запуск
+# 6) Запустить приложение обратно / подсказать запуск
 if ($svc) {
     Write-Host "Запускаю службу $serviceName ..."
     Start-Service $serviceName
     Write-Host "Служба запущена." -ForegroundColor Green
+} elseif ($task) {
+    Write-Host "Запускаю задачу Планировщика $serviceName ..."
+    Start-ScheduledTask -TaskName $serviceName
+    Write-Host "Задача запущена." -ForegroundColor Green
 } else {
-    Write-Host "Служба не установлена. Запустите сервер: scripts\start.ps1" -ForegroundColor Yellow
+    Write-Host "Автозапуск не настроен. Запустите сервер: scripts\start.ps1" -ForegroundColor Yellow
+    Write-Host "(или настройте автозапуск: scripts\install-task.ps1)" -ForegroundColor Yellow
 }
 
 Write-Host "== Обновление завершено ==" -ForegroundColor Cyan
