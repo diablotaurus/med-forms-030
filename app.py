@@ -32,7 +32,7 @@ import json
 import os
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (Flask, g, redirect, render_template, request, url_for, abort,
@@ -41,7 +41,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "base.db")
-SECRET_PATH = os.path.join(BASE_DIR, "secret.key")
+
+# Тайм-аут бездействия: после стольких минут без активности нужен повторный вход
+SESSION_TIMEOUT = timedelta(hours=2)
 
 # Учётные данные по умолчанию (создаются при первом запуске, смените после входа)
 DEFAULT_USER = "admin"
@@ -74,18 +76,21 @@ def inject_globals():
     return {"app_version": APP_VERSION}
 
 
-def _load_secret_key():
-    """Постоянный секретный ключ, чтобы сессии не сбрасывались при перезапуске."""
-    if os.path.exists(SECRET_PATH):
-        with open(SECRET_PATH, "r", encoding="utf-8") as f:
-            return f.read().strip()
-    key = os.urandom(24).hex()
-    with open(SECRET_PATH, "w", encoding="utf-8") as f:
-        f.write(key)
-    return key
+# Секретный ключ генерируется заново при каждом запуске процесса.
+# Поэтому после перезапуска сервера все ранее выданные сессии становятся
+# недействительными — требуется повторный вход (так безопаснее).
+app.secret_key = os.urandom(32)
+
+# Авто-выход по бездействию: сессия живёт SESSION_TIMEOUT и продлевается
+# при каждом запросе (скользящий тайм-аут).
+app.permanent_session_lifetime = SESSION_TIMEOUT
+app.config["SESSION_REFRESH_EACH_REQUEST"] = True
 
 
-app.secret_key = _load_secret_key()
+@app.before_request
+def _refresh_session_timeout():
+    # делает сессию «постоянной», чтобы к ней применялся срок жизни
+    session.permanent = True
 
 
 # --------------------------------------------------------------------------
