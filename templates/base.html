@@ -9,6 +9,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% block content %}{% endblock %}
+    <div class="app-version no-print" title="Версия приложения">v{{ app_version }}</div>
     {% block scripts %}{% endblock %}
 </body>
 </html>

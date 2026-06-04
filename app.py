@@ -62,7 +62,16 @@ FORM_TYPES = {
 }
 DEFAULT_FORM_TYPE = "030"
 
+# Версия приложения (единый источник). Меняется при выпуске новой версии.
+APP_VERSION = "0.1.0"
+
 app = Flask(__name__)
+
+
+@app.context_processor
+def inject_globals():
+    """Делает версию доступной во всех шаблонах как {{ app_version }}."""
+    return {"app_version": APP_VERSION}
 
 
 def _load_secret_key():
