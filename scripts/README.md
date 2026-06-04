@@ -7,6 +7,7 @@
 | `setup.ps1` / `setup.bat` | Первичная установка: окружение, зависимости, порт в брандмауэре |
 | `start.ps1` / `start.bat` | Запуск сервера (waitress) в окне (Ctrl+C — остановка) |
 | `update.ps1` / `update.bat` | **Ручное обновление с GitHub** (бэкап БД → git pull → зависимости → перезапуск) |
+| `backup.ps1` / `backup.bat` | Ручная резервная копия базы `base.db` в папку `backups\` |
 | `install-service.ps1` | Установка как службы Windows (автозапуск, фон) — нужен NSSM |
 | `uninstall-service.ps1` | Удаление службы |
 
@@ -109,5 +110,8 @@ powershell -ExecutionPolicy Bypass -File scripts\update.ps1
   порт открыт в брандмауэре (создаётся в `setup.ps1`) и доступен в вашей сети.
 - **HTTPS.** Для шифрования поставьте перед приложением обратный прокси
   (IIS с ARR/URL Rewrite или nginx) и настройте сертификат.
-- **Резервные копии.** Регулярно копируйте `base.db` (в нём все карты).
-  `update.ps1` делает копию автоматически перед каждым обновлением.
+- **Резервные копии.** В `base.db` хранятся все карты. Сделать копию вручную:
+  `powershell -ExecutionPolicy Bypass -File scripts\backup.ps1` (или двойной клик
+  по `scripts\backup.bat`) — копия появится в папке `backups\`. Можно оставлять
+  только последние N копий: `scripts\backup.ps1 -Keep 30`. Перед каждым
+  обновлением `update.ps1` тоже делает копию автоматически.
