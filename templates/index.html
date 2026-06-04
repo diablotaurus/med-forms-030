@@ -11,13 +11,7 @@
     </div>
 
     {# ----- вкладки переключения форм ----- #}
-    <div class="tabs">
-        {% for key, meta in form_types.items() %}
-        <a class="tab {% if key == current_type %}active{% endif %}"
-           href="{{ url_for('list_forms', ftype=key) }}">{{ meta["short"] }}</a>
-        {% endfor %}
-        <a class="tab tab-settings" href="{{ url_for('settings') }}">⚙ Настройки</a>
-    </div>
+    {% include "_menu.html" %}
 
     <div class="tab-bar">
         <p class="muted tab-title">{{ form_types[current_type]["title"] }} · учётная форма N {{ form_types[current_type]["short"] }}</p>
@@ -39,7 +33,7 @@
         <tbody>
             {% for f in forms %}
             <tr>
-                <td>{{ f["id"] }}</td>
+                <td>{{ loop.index }}</td>
                 <td>{{ f["patient_fio"] or "—" }}</td>
                 <td>{{ f["birth_date"] or "—" }}</td>
                 <td>{{ f["created_at"] }}</td>
@@ -48,8 +42,8 @@
                     <a class="btn" href="{{ url_for('form_edit', form_id=f['id']) }}">Открыть</a>
                     <a class="btn" target="formPrint" href="{{ url_for('form_print', form_id=f['id']) }}">Печать</a>
                     <form method="post" action="{{ url_for('form_delete', form_id=f['id']) }}"
-                          onsubmit="return confirm('Удалить карту №{{ f['id'] }}?');" style="display:inline">
-                        <button class="btn btn-danger" type="submit">Удалить</button>
+                          onsubmit="return confirm('Переместить карту №{{ loop.index }} в корзину?');" style="display:inline">
+                        <button class="btn btn-danger" type="submit">🗑 В корзину</button>
                     </form>
                 </td>
             </tr>

@@ -127,11 +127,14 @@ def init_db():
         )
         """
     )
-    # миграция: добавить столбец form_type, если его ещё нет
+    # миграция: добавить недостающие столбцы
     cols = [r[1] for r in db.execute("PRAGMA table_info(forms)").fetchall()]
     if "form_type" not in cols:
         db.execute("ALTER TABLE forms ADD COLUMN form_type TEXT DEFAULT '030'")
         db.execute("UPDATE forms SET form_type = '030' WHERE form_type IS NULL")
+    if "deleted" not in cols:
+        db.execute("ALTER TABLE forms ADD COLUMN deleted INTEGER DEFAULT 0")
+        db.execute("UPDATE forms SET deleted = 0 WHERE deleted IS NULL")
     # завести пользователя по умолчанию, если пользователей ещё нет
     count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if count == 0:
@@ -326,12 +329,23 @@ def list_forms(ftype):
     db = get_db()
     rows = db.execute(
         "SELECT id, patient_fio, birth_date, created_at, updated_at "
-        "FROM forms WHERE form_type = ? ORDER BY updated_at DESC",
+        "FROM forms WHERE form_type = ? AND deleted = 0 ORDER BY id ASC",
         (ftype,),
     ).fetchall()
     return render_template(
         "index.html", forms=rows, form_types=FORM_TYPES, current_type=ftype
     )
+
+
+@app.route("/trash")
+@login_required
+def trash():
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, patient_fio, birth_date, form_type, created_at, updated_at "
+        "FROM forms WHERE deleted = 1 ORDER BY updated_at DESC"
+    ).fetchall()
+    return render_template("trash.html", forms=rows, form_types=FORM_TYPES)
 
 
 @app.route("/settings", methods=["GET", "POST"])
@@ -452,12 +466,37 @@ def form_print(form_id):
 @app.route("/form/<int:form_id>/delete", methods=["POST"])
 @login_required
 def form_delete(form_id):
+    """Мягкое удаление — карта помечается удалённой и попадает в корзину."""
     db = get_db()
     row = db.execute("SELECT form_type FROM forms WHERE id = ?", (form_id,)).fetchone()
     ftype = (row["form_type"] if row else None) or DEFAULT_FORM_TYPE
-    db.execute("DELETE FROM forms WHERE id = ?", (form_id,))
+    db.execute(
+        "UPDATE forms SET deleted = 1, updated_at = ? WHERE id = ?", (now(), form_id)
+    )
     db.commit()
     return redirect(url_for("list_forms", ftype=ftype))
+
+
+@app.route("/form/<int:form_id>/restore", methods=["POST"])
+@login_required
+def form_restore(form_id):
+    """Восстановить карту из корзины."""
+    db = get_db()
+    db.execute(
+        "UPDATE forms SET deleted = 0, updated_at = ? WHERE id = ?", (now(), form_id)
+    )
+    db.commit()
+    return redirect(url_for("trash"))
+
+
+@app.route("/form/<int:form_id>/purge", methods=["POST"])
+@login_required
+def form_purge(form_id):
+    """Удалить карту навсегда (только из корзины)."""
+    db = get_db()
+    db.execute("DELETE FROM forms WHERE id = ? AND deleted = 1", (form_id,))
+    db.commit()
+    return redirect(url_for("trash"))
 
 
 # --------------------------------------------------------------------------

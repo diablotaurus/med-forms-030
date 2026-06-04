@@ -1,0 +1,10 @@
+<div class="tabs">
+    {% for key, meta in form_types.items() %}
+    <a class="tab {% if key == current_type %}active{% endif %}"
+       href="{{ url_for('list_forms', ftype=key) }}">{{ meta["short"] }}</a>
+    {% endfor %}
+    <a class="tab tab-right {% if menu_active == 'trash' %}active{% endif %}"
+       href="{{ url_for('trash') }}">🗑 Корзина</a>
+    <a class="tab tab-settings {% if menu_active == 'settings' %}active{% endif %}"
+       href="{{ url_for('settings') }}">⚙ Настройки</a>
+</div>

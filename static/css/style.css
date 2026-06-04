@@ -138,7 +138,7 @@ body {
     gap: 16px; margin: 14px 0 6px;
 }
 .tab-title { margin: 0; }
-.tab-settings { margin-left: auto; }
+.tab-right { margin-left: auto; }  /* первый правый пункт меню отжимает группу вправо */
 
 /* форма настроек */
 .settings-form {

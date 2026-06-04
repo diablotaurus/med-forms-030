@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Корзина{% endblock %}
+{% block content %}
+<div class="page">
+    <div class="topbar">
+        <h1>Корзина</h1>
+        <div class="topbar-actions">
+            <a class="user-link" href="{{ url_for('change_password') }}" title="Сменить пароль">{{ session.user }}</a>
+            <a class="btn" href="{{ url_for('logout') }}">Выйти</a>
+        </div>
+    </div>
+
+    {% set menu_active = 'trash' %}
+    {% include "_menu.html" %}
+
+    <p class="muted tab-title" style="margin: 14px 0 6px;">Удалённые карты — можно восстановить или удалить навсегда</p>
+
+    {% if forms %}
+    <table class="list">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Тип формы</th>
+                <th>Ф.И.О. несовершеннолетнего</th>
+                <th>Дата рождения</th>
+                <th>Удалена</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in forms %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ form_types[f["form_type"]]["short"] if f["form_type"] in form_types else f["form_type"] }}</td>
+                <td>{{ f["patient_fio"] or "—" }}</td>
+                <td>{{ f["birth_date"] or "—" }}</td>
+                <td>{{ f["updated_at"] }}</td>
+                <td class="actions">
+                    <form method="post" action="{{ url_for('form_restore', form_id=f['id']) }}" style="display:inline">
+                        <button class="btn btn-add" type="submit">↩ Восстановить</button>
+                    </form>
+                    <form method="post" action="{{ url_for('form_purge', form_id=f['id']) }}"
+                          onsubmit="return confirm('Удалить карту навсегда? Это действие необратимо.');" style="display:inline">
+                        <button class="btn btn-danger" type="submit">Удалить навсегда</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Корзина пуста.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -10,12 +10,8 @@
         </div>
     </div>
 
-    <div class="tabs">
-        {% for key, meta in form_types.items() %}
-        <a class="tab" href="{{ url_for('list_forms', ftype=key) }}">{{ meta["short"] }}</a>
-        {% endfor %}
-        <a class="tab tab-settings active" href="{{ url_for('settings') }}">⚙ Настройки</a>
-    </div>
+    {% set menu_active = 'settings' %}
+    {% include "_menu.html" %}
 
     <form method="post" action="{{ url_for('settings') }}" class="settings-form">
         {% if success %}<div class="login-success">{{ success }}</div>{% endif %}
