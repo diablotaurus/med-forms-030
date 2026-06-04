@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>История разработки — med-forms-030 (v0.1.4)</title>
+<style>
+    :root{
+        --accent:#2f5d8c; --accent2:#244a70; --sep:#c9d4e0; --fill:#f5f8fc;
+        --grey:#666; --ok:#2e7d32; --fix:#b8860b; --add:#2f5d8c;
+    }
+    *{box-sizing:border-box}
+    body{
+        font-family:Arial,"Segoe UI",sans-serif;color:#16202b;line-height:1.55;
+        margin:0;background:#eef1f5;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+    header.doc{
+        background:linear-gradient(135deg,#2f5d8c,#244a70);color:#fff;
+        border-radius:14px;padding:30px 32px;box-shadow:0 4px 18px rgba(0,0,0,.12)
+    }
+    header.doc h1{margin:0 0 6px;font-size:26px}
+    header.doc .sub{opacity:.9;font-size:14px}
+    .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+        padding:4px 10px;border-radius:20px;font-size:12px}
+    .intro{background:#fff;border:1px solid var(--sep);border-radius:12px;
+        padding:20px 24px;margin-top:22px}
+    .intro h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
+    .release{background:#fff;border:2px solid var(--accent);border-radius:12px;
+        padding:20px 24px;margin-top:22px}
+    .release h2{margin:0 0 8px;color:var(--accent)}
+    h2.section{margin:34px 0 6px;font-size:20px;color:var(--accent2);
+        border-bottom:2px solid var(--sep);padding-bottom:6px}
+    .timeline{position:relative;margin-top:18px;padding-left:28px}
+    .timeline::before{content:"";position:absolute;left:9px;top:4px;bottom:4px;
+        width:2px;background:var(--sep)}
+    .ver{position:relative;margin:0 0 18px;background:#fff;border:1px solid var(--sep);
+        border-radius:10px;padding:14px 18px 12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+    .ver::before{content:"";position:absolute;left:-23px;top:18px;width:12px;height:12px;
+        border-radius:50%;background:var(--accent);border:2px solid #fff;
+        box-shadow:0 0 0 2px var(--sep)}
+    .ver h3{margin:0 0 4px;font-size:16px}
+    .ver h3 .num{display:inline-block;background:var(--fill);color:var(--accent);
+        border:1px solid var(--sep);border-radius:6px;padding:1px 8px;font-size:13px;
+        margin-right:8px;font-variant-numeric:tabular-nums}
+    .ver ul{margin:8px 0 0;padding-left:20px}
+    .ver li{margin:3px 0}
+    .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;
+        padding:1px 6px;margin-right:6px;vertical-align:1px}
+    .t-add{background:#eaf1fa;color:var(--add)}
+    .t-fix{background:#fdf3e0;color:var(--fix)}
+    .t-doc{background:#eef7ee;color:var(--ok)}
+    .files{color:var(--grey);font-size:12.5px;margin-top:6px}
+    code{background:var(--fill);border:1px solid var(--sep);border-radius:4px;
+        padding:0 5px;font-size:12.5px}
+    .prev{background:#fff;border:1px dashed var(--sep);border-radius:10px;
+        padding:14px 18px;margin-top:18px;color:#33414f;font-size:14px}
+    footer.doc{margin-top:40px;color:var(--grey);font-size:13px;text-align:center}
+    a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+    <h1>История разработки — med-forms-030</h1>
+    <div class="sub">Веб-приложение для учётных форм <b>N 030/у-Д/с</b> и
+        <b>N 030-ПО/у</b> (карты диспансеризации и профилактического осмотра
+        несовершеннолетнего)</div>
+    <div class="badges">
+        <span class="badge">Версия 0.1.4</span>
+        <span class="badge">04.06.2026</span>
+        <span class="badge">Лицензия GPL v3.0</span>
+        <span class="badge">Python · Flask · waitress · SQLite</span>
+    </div>
+</header>
+
+<section class="intro">
+    <h2>О документе</h2>
+    <p>Это продолжение конспекта этапов разработки. Каждый шаг помечен минорной
+       версией от <code>0.1.1</code> до <code>0.1.4</code> — в порядке появления
+       после релиза <code>0.1.0</code>. Версия данного документа — <b>0.1.4</b>
+       (соответствует текущему шагу разработки).</p>
+    <p>Обозначения: <span class="tag t-add">ДОБАВЛЕНО</span>
+       <span class="tag t-fix">ИСПРАВЛЕНО</span>
+       <span class="tag t-doc">ДОКУМЕНТАЦИЯ</span></p>
+    <div class="prev">
+        📄 Предыдущие этапы (0.0.1 → 0.0.21 и релиз 0.1.0) описаны в файле
+        <code>docs/changelog_04.06.2026_0.1.0.html</code>.
+    </div>
+</section>
+
+<section class="release">
+    <h2>🏷 Версия 0.1.4 — что нового с 0.1.0</h2>
+    <p>Линейка <b>0.1.x</b> посвящена выходу приложения «в продакшн»: запуск на
+       сервере, обслуживание и удобство эксплуатации.</p>
+    <ul>
+        <li>Готовое развёртывание на Windows Server (waitress + скрипты).</li>
+        <li>Ручное обновление приложения с GitHub одним скриптом.</li>
+        <li>Резервное копирование базы данных.</li>
+        <li>Отображение номера версии в интерфейсе.</li>
+    </ul>
+</section>
+
+<h2 class="section">Этапы разработки (0.1.1 → 0.1.4)</h2>
+
+<div class="timeline">
+
+    <div class="ver">
+        <h3><span class="num">0.1.1</span>Развёртывание на Windows Server</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> <code>serve.py</code> — производственный запуск через WSGI-сервер <b>waitress</b> (адрес <code>0.0.0.0</code>, порт настраивается переменными <code>HOST</code>/<code>PORT</code>/<code>THREADS</code>).</li>
+            <li><code>waitress</code> добавлен в <code>requirements.txt</code>.</li>
+            <li>Папка <code>scripts/</code> со скриптами:
+                <code>setup.ps1</code> (окружение, зависимости, открытие порта в брандмауэре),
+                <code>start.ps1</code> (запуск сервера),
+                <code>update.ps1</code> (обновление с GitHub),
+                <code>install-service.ps1</code> / <code>uninstall-service.ps1</code> (служба Windows через NSSM),
+                а также <code>.bat</code>-лаунчеры для запуска двойным кликом.</li>
+            <li><code>scripts/README.md</code> — пошаговая инструкция по развёртыванию и обновлению.</li>
+            <li><code>.gitignore</code>: исключены <code>logs/</code> и <code>backups/</code>; в README добавлен раздел «Развёртывание на сервере».</li>
+        </ul>
+        <div class="files">serve.py · scripts/* · requirements.txt · README.md · .gitignore</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.1.2</span>Резервное копирование и кодировка скриптов</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> <code>scripts/backup.ps1</code> (+ <code>backup.bat</code>) — ручная резервная копия <code>base.db</code> в папку <code>backups\</code> с отметкой даты/времени; опция <code>-Keep N</code> для хранения только N последних копий.</li>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Все скрипты <code>.ps1</code> пересохранены в кодировке <b>UTF-8 с BOM</b>. Без BOM встроенный в Windows Server <b>Windows PowerShell 5.1</b> читает кириллицу как ANSI, и скрипты не запускаются.</li>
+            <li>Корректность проверена под реальным <code>powershell.exe</code> 5.1: все скрипты парсятся без ошибок, <code>backup.ps1</code> отрабатывает.</li>
+        </ul>
+        <div class="files">scripts/backup.ps1 · scripts/backup.bat · scripts/*.ps1</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.1.3</span>Отображение номера версии</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Константа <code>APP_VERSION</code> в <code>app.py</code> и контекст-процессор — версия доступна во всех шаблонах как <code>{{ app_version }}</code>.</li>
+            <li>Бейдж версии в правом нижнем углу на всех страницах (скрыт при печати).</li>
+        </ul>
+        <div class="files">app.py · templates/base.html · static/css/style.css</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.1.4</span>Документация и выпуск версии</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> Этот файл — продолжение конспекта этапов разработки (с 0.1.0).</li>
+            <li>Версия приложения поднята до <b>0.1.4</b> и отображается в углу интерфейса.</li>
+        </ul>
+        <div class="files">docs/changelog_04.06.2026_0.1.4.html · app.py</div>
+    </div>
+
+</div>
+
+<footer class="doc">
+    med-forms-030 · Copyright © 2026 diablotaurus · GNU GPL v3.0<br>
+    Документ сформирован 04.06.2026 · версия 0.1.4
+</footer>
+
+</div>
+</body>
+</html>

@@ -63,7 +63,7 @@ FORM_TYPES = {
 DEFAULT_FORM_TYPE = "030"
 
 # Версия приложения (единый источник). Меняется при выпуске новой версии.
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.1.4"
 
 app = Flask(__name__)
 
