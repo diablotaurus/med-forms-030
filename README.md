@@ -78,6 +78,31 @@ python app.py
 > На Linux/macOS вместо `\.venv\Scripts\Activate.ps1` используйте
 > `source .venv/bin/activate`.
 
+> ⚠️ `python app.py` — это сервер **разработки**. Для постоянной работы на
+> сервере используйте production-запуск (waitress) — см. ниже.
+
+## Развёртывание на сервере (Windows Server)
+
+Для боевого использования приложение запускается через WSGI-сервер
+**waitress** (точка входа `serve.py`), при необходимости — как служба Windows.
+Готовые скрипты установки, запуска и **обновления с GitHub** лежат в папке
+[`scripts/`](scripts/) — подробная инструкция в [`scripts/README.md`](scripts/README.md).
+
+Кратко:
+
+```powershell
+git clone https://github.com/diablotaurus/med-forms-030.git
+cd med-forms-030
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1   # установка
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1   # запуск
+```
+
+Обновление развёрнутого приложения до последней версии из репозитория:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\update.ps1
+```
+
 База `base.db` создаётся автоматически при первом запуске рядом с `app.py`.
 
 ## Структура
