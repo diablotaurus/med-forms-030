@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>История разработки — med-forms-030 (v0.1.0)</title>
+<style>
+    :root{
+        --accent:#2f5d8c; --accent2:#244a70; --sep:#c9d4e0; --fill:#f5f8fc;
+        --grey:#666; --ok:#2e7d32; --fix:#b8860b; --add:#2f5d8c;
+    }
+    *{box-sizing:border-box}
+    body{
+        font-family:Arial,"Segoe UI",sans-serif;color:#16202b;line-height:1.55;
+        margin:0;background:#eef1f5;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+    header.doc{
+        background:linear-gradient(135deg,#2f5d8c,#244a70);color:#fff;
+        border-radius:14px;padding:30px 32px;box-shadow:0 4px 18px rgba(0,0,0,.12)
+    }
+    header.doc h1{margin:0 0 6px;font-size:26px}
+    header.doc .sub{opacity:.9;font-size:14px}
+    .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+        padding:4px 10px;border-radius:20px;font-size:12px}
+    .intro{background:#fff;border:1px solid var(--sep);border-radius:12px;
+        padding:20px 24px;margin-top:22px}
+    .intro h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
+    .release{background:#fff;border:2px solid var(--accent);border-radius:12px;
+        padding:20px 24px;margin-top:22px}
+    .release h2{margin:0 0 8px;color:var(--accent)}
+    h2.section{margin:34px 0 6px;font-size:20px;color:var(--accent2);
+        border-bottom:2px solid var(--sep);padding-bottom:6px}
+    .timeline{position:relative;margin-top:18px;padding-left:28px}
+    .timeline::before{content:"";position:absolute;left:9px;top:4px;bottom:4px;
+        width:2px;background:var(--sep)}
+    .ver{position:relative;margin:0 0 18px;background:#fff;border:1px solid var(--sep);
+        border-radius:10px;padding:14px 18px 12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+    .ver::before{content:"";position:absolute;left:-23px;top:18px;width:12px;height:12px;
+        border-radius:50%;background:var(--accent);border:2px solid #fff;
+        box-shadow:0 0 0 2px var(--sep)}
+    .ver h3{margin:0 0 4px;font-size:16px}
+    .ver h3 .num{display:inline-block;background:var(--fill);color:var(--accent);
+        border:1px solid var(--sep);border-radius:6px;padding:1px 8px;font-size:13px;
+        margin-right:8px;font-variant-numeric:tabular-nums}
+    .ver ul{margin:8px 0 0;padding-left:20px}
+    .ver li{margin:3px 0}
+    .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;
+        padding:1px 6px;margin-right:6px;vertical-align:1px}
+    .t-add{background:#eaf1fa;color:var(--add)}
+    .t-fix{background:#fdf3e0;color:var(--fix)}
+    .t-doc{background:#eef7ee;color:var(--ok)}
+    .files{color:var(--grey);font-size:12.5px;margin-top:6px}
+    code{background:var(--fill);border:1px solid var(--sep);border-radius:4px;
+        padding:0 5px;font-size:12.5px}
+    footer.doc{margin-top:40px;color:var(--grey);font-size:13px;text-align:center}
+    a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+    <h1>История разработки — med-forms-030</h1>
+    <div class="sub">Веб-приложение для учётных форм <b>N 030/у-Д/с</b> и
+        <b>N 030-ПО/у</b> (карты диспансеризации и профилактического осмотра
+        несовершеннолетнего)</div>
+    <div class="badges">
+        <span class="badge">Релиз 0.1.0</span>
+        <span class="badge">04.06.2026</span>
+        <span class="badge">Лицензия GPL v3.0</span>
+        <span class="badge">Python · Flask · SQLite</span>
+    </div>
+</header>
+
+<section class="intro">
+    <h2>О документе</h2>
+    <p>Это конспект этапов разработки приложения. Каждый шаг помечен минорной
+       версией от <code>0.0.1</code> до <code>0.0.21</code> — в порядке появления.
+       Версия <b>0.1.0</b> — первый сведённый релиз, объединяющий все шаги ниже.</p>
+    <p>Обозначения: <span class="tag t-add">ДОБАВЛЕНО</span>
+       <span class="tag t-fix">ИСПРАВЛЕНО</span>
+       <span class="tag t-doc">ДОКУМЕНТАЦИЯ</span></p>
+</section>
+
+<section class="release">
+    <h2>🏷 Версия 0.1.0 — сводный релиз</h2>
+    <p>Полнофункциональное веб-приложение для заполнения, хранения и печати двух
+       медицинских учётных форм. Ключевые возможности на момент релиза:</p>
+    <ul>
+        <li>Две формы (030/у-Д/с и 030-ПО/у) с переключением через вкладки.</li>
+        <li>Динамические блоки диагнозов (1–10) с авто-нумерацией пунктов.</li>
+        <li>Маски и двойная (браузер + сервер) проверка дат и СНИЛС.</li>
+        <li>Авторизация, смена пароля, настройки реквизитов организации.</li>
+        <li>Аккуратная печать/PDF под A4; печать в одной вкладке.</li>
+        <li>Раздельная нумерация списков и корзина с восстановлением.</li>
+        <li>Открытый код под GNU GPL v3.0, опубликован на GitHub.</li>
+    </ul>
+</section>
+
+<h2 class="section">Этапы разработки (0.0.1 → 0.0.21)</h2>
+
+<div class="timeline">
+
+    <div class="ver">
+        <h3><span class="num">0.0.1</span>Базовое веб-приложение (форма 030/у-Д/с)</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Flask + SQLite, файл базы <code>base.db</code>.</li>
+            <li>Полное воспроизведение формы N 030/у-Д/с: разделы 1–19, шапка, подписи, М.П.</li>
+            <li>Динамические блоки диагнозов в разделах 16 и 17 (минимум 1, до 10, кнопка «+ Добавить диагноз») с автоматическим пересчётом номеров пунктов и зависимых разделов.</li>
+            <li>Большие авто-растущие текстовые поля в пунктах 17.11, 17.12, 18, 19.</li>
+            <li>Список карт, создание / редактирование / удаление, печать под A4 через браузер (с «Сохранить как PDF»).</li>
+            <li>Все поля сохраняются в JSON-столбце <code>data</code>.</li>
+        </ul>
+        <div class="files">app.py · templates/* · static/css/style.css · static/js/form.js</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.2</span>Маски ввода и проверка данных (в браузере)</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Авто-маска дат <code>дд.мм.гггг</code> для всех 8 полей-дат.</li>
+            <li>Маска СНИЛС <code>ХХХ-ХХХ-ХХХ ХХ</code>.</li>
+            <li>Проверка корректности: календарные даты (месяц, день, високосные годы) и контрольная сумма СНИЛС.</li>
+            <li>Подсветка ошибочных полей, сводка ошибок сверху, блокировка сохранения.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.3</span>Серверная (дублирующая) валидация</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Проверка дат и СНИЛС на сервере (<code>validate_form</code>).</li>
+            <li>При некорректных данных карта не сохраняется, форма возвращается со списком ошибок (HTTP 422).</li>
+            <li>Защита от обхода браузерной проверки (прямые запросы, отключённый JS).</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.4</span>Авторизация</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Страница входа, сессии в cookie, постоянный <code>secret.key</code>.</li>
+            <li>Таблица <code>users</code>, пароли хранятся хэшами (werkzeug).</li>
+            <li>Защита всех страниц декоратором <code>login_required</code>.</li>
+            <li>Учётная запись по умолчанию <code>admin / admin</code>, кнопка «Выйти».</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.5</span>Смена пароля из интерфейса</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Страница смены пароля с проверками (текущий пароль, длина нового, совпадение, отличие от старого).</li>
+            <li>Доступ через кнопку и по клику на имя пользователя.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.6</span>Упрощение доступа к смене пароля</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Убрана отдельная кнопка «Сменить пароль».</li>
+            <li>Смена пароля теперь только по клику на имя пользователя — единообразно на всех страницах.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.7</span>Вторая форма 030-ПО/у и мультиформенность</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Карта профилактического медицинского осмотра (разделы 1–18 + подписи).</li>
+            <li>Динамические диагнозы в разделах 15 и 16 второй формы.</li>
+            <li>Столбец <code>form_type</code> в БД + автоматическая миграция; маршруты <code>/forms/&lt;тип&gt;</code>.</li>
+            <li>Меню-вкладки переключения форм; списки фильтруются по типу.</li>
+        </ul>
+        <div class="files">templates/form_030po.html · static/js/form_030po.js</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.8</span>Заголовок входа и Настройки</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Заголовок страницы входа изменён на «Учётная форма № 030».</li>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Страница «Настройки» и таблица <code>settings</code>.</li>
+            <li>Реквизиты медорганизации вводятся один раз и автоматически подставляются в шапку каждой новой карты обеих форм.</li>
+        </ul>
+        <div class="files">templates/settings.html</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.9</span>Печать: устранение пустот</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Большой пробел после п. 16.1 перед первым блоком диагноза.</li>
+            <li>Блокам диагнозов и большим текстовым полям разрешён перенос между страницами (<code>break-inside</code>), чтобы не «уезжать» целиком.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.10</span>Проверка печати формы 030-ПО/у</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> Контрольный рендеринг PDF обеих форм (headless Chrome).</li>
+            <li>Подтверждено отсутствие пустот; общий print-стиль покрывает обе формы.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.11</span>Аккуратная печать блоков диагнозов</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> В печати у блоков убраны рамки (они «рвались» на границе страниц).</li>
+            <li>Вместо рамки — тонкая линия-разделитель и заголовок «Диагноз № N»; вид ближе к официальной форме.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.12</span>Фикс «прыжка» пункта меню «Настройки»</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Единое (правое) положение пункта «Настройки» на всех страницах.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.13</span>Центрирование правого блока шапки</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Блок «Код формы по ОКУД / Учётная форма…» центрирован в своей колонке, не затрагивая левый блок.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.14</span>Чистка шапки</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Убраны разделительные линии: вертикальная между блоками шапки, между шапкой и названием формы, между названием и первым пунктом.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.15</span>Печать в одной вкладке</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Кнопки «Печать» получили постоянное имя вкладки (<code>target="formPrint"</code>) вместо <code>_blank</code> — вкладки больше не множатся.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.16</span>Актуализация README</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> README приведён в соответствие текущему состоянию приложения.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.17</span>Публикация на GitHub</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> <code>.gitignore</code> (исключены <code>base.db</code>, <code>secret.key</code>, <code>.venv</code> и временные файлы).</li>
+            <li>Создан публичный репозиторий <b>med-forms-030</b>; в репозиторий вошла только папка приложения (приватные файлы окружения исключены).</li>
+        </ul>
+        <div class="files">github.com/diablotaurus/med-forms-030</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.18</span>Лицензия</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Файл <code>LICENSE</code> с текстом GNU GPL v3.0; раздел «Лицензия» в README.</li>
+            <li>GitHub корректно распознаёт лицензию проекта.</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.19</span>Метаданные проекта</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> Бейджи в README (License / Python / Flask).</li>
+            <li><code>CONTRIBUTING.md</code> — руководство для контрибьюторов.</li>
+            <li>Короткие GPL-заголовки в исходниках (<code>app.py</code>, <code>form.js</code>, <code>form_030po.js</code>, <code>style.css</code>).</li>
+        </ul>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.20</span>Раздельная нумерация и корзина</h3>
+        <ul>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> Номер карты в списке — порядковый в пределах своего типа, без «дыр» после удаления; списки 030 и 030-ПО нумеруются независимо.</li>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Мягкое удаление (столбец <code>deleted</code> + миграция): карта перемещается в «Корзину».</li>
+            <li>Страница «Корзина»: восстановление и удаление навсегда; общий партиал меню <code>_menu.html</code>.</li>
+        </ul>
+        <div class="files">templates/trash.html · templates/_menu.html</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.0.21</span>Документация по разработке</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> Папка <code>docs/</code> и этот файл-конспект этапов разработки.</li>
+        </ul>
+    </div>
+
+</div>
+
+<footer class="doc">
+    med-forms-030 · Copyright © 2026 diablotaurus · GNU GPL v3.0<br>
+    Документ сформирован 04.06.2026 · версия 0.1.0
+</footer>
+
+</div>
+</body>
+</html>
