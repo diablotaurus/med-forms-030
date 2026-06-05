@@ -67,13 +67,31 @@ DEFAULT_FORM_TYPE = "030"
 # Версия приложения (единый источник). Меняется при выпуске новой версии.
 APP_VERSION = "0.1.4"
 
+# Поля, которые можно предзаполнять значениями по умолчанию из «Настроек»
+# (в карте они остаются редактируемыми).
+PREFILL_FIELDS = [
+    "org_info", "fio_doctor", "fio_head",                 # общие для обеих форм
+    "p1", "p12", "p9", "p10", "p12b",                     # форма 030/у-Д/с
+    "mo_pmsp_name", "mo_pmsp_addr", "edu_name",           # форма 030-ПО/у
+    "edu_addr", "mo_osmotr",
+]
+# Все ключи, редактируемые на странице «Настройки»
+# (+ smo_options — список страховых медицинских организаций для выпадающего списка).
+SETTINGS_KEYS = PREFILL_FIELDS + ["smo_options"]
+
 app = Flask(__name__)
 
 
 @app.context_processor
 def inject_globals():
-    """Делает версию доступной во всех шаблонах как {{ app_version }}."""
-    return {"app_version": APP_VERSION}
+    """Глобальные значения для всех шаблонов (версия, список страховых организаций)."""
+    smo_options = []
+    try:
+        raw = get_setting("smo_options", "")
+        smo_options = [s.strip() for s in raw.splitlines() if s.strip()]
+    except Exception:
+        smo_options = []
+    return {"app_version": APP_VERSION, "smo_options": smo_options}
 
 
 # Секретный ключ генерируется заново при каждом запуске процесса.
@@ -367,13 +385,12 @@ def trash():
 def settings():
     success = None
     if request.method == "POST":
-        set_setting("org_info", request.form.get("org_info", "").strip())
+        for key in SETTINGS_KEYS:
+            set_setting(key, request.form.get(key, "").strip())
         success = "Настройки сохранены."
+    values = {key: get_setting(key, "") for key in SETTINGS_KEYS}
     return render_template(
-        "settings.html",
-        org_info=get_setting("org_info", ""),
-        form_types=FORM_TYPES,
-        success=success,
+        "settings.html", values=values, form_types=FORM_TYPES, success=success
     )
 
 
@@ -381,8 +398,12 @@ def settings():
 @login_required
 def form_new(ftype):
     meta = _require_ftype(ftype)
-    # автоподстановка реквизитов организации из настроек
-    data = {"org_info": get_setting("org_info", "")}
+    # автоподстановка значений по умолчанию из «Настроек» (поля остаются редактируемыми)
+    data = {}
+    for field in PREFILL_FIELDS:
+        value = get_setting(field, "")
+        if value:
+            data[field] = value
     return render_template(
         meta["template"], mode="new", form_id=None, data=data, form_type=ftype
     )

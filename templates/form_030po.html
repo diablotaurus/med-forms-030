@@ -73,7 +73,9 @@
     {# ============================ 2 ============================ #}
     <div class="sec"><span class="num">2.</span> Полис обязательного медицинского страхования: N {{ fld('polis_n', 'w200') }}</div>
     <div class="sub">Страховая медицинская организация:</div>
-    {{ ta('smo', 2, 'w100') }}
+    <input type="text" class="fld w100" name="smo" list="smoList" autocomplete="off"
+           placeholder="выберите из списка или введите вручную">
+    <datalist id="smoList">{% for o in smo_options %}<option value="{{ o }}"></option>{% endfor %}</datalist>
 
     {# ============================ 3 ============================ #}
     <div class="sec"><span class="num">3.</span> Страховой номер индивидуального лицевого счёта (СНИЛС): {{ fld('snils', 'w200 js-snils') }}</div>
