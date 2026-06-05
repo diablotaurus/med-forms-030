@@ -58,7 +58,7 @@
             <div class="muted">Медицинская документация</div>
             <div class="b">Учётная форма N 030-ПО/у</div>
             <div class="muted">Утверждена приказом Минздрава России</div>
-            <div class="muted">от «__» __________ 202_ г. N __</div>
+            <div class="muted">от «14» апреля 2025 г. N 211н</div>
         </div>
     </div>
 
@@ -260,14 +260,14 @@
             <div>Врач, ответственный за проведение профилактического осмотра:</div>
             <div class="sign-line">
                 <span>{{ fld('sig_doctor', 'w150') }}<br><span class="muted small">(подпись)</span></span>
-                <span>{{ fld('fio_doctor', 'w300') }}<br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
+                <span><input type="text" class="fld w300" name="fio_doctor" list="fioDoctorList" autocomplete="off"><datalist id="fioDoctorList">{% for o in fio_doctor_options %}<option value="{{ o }}"></option>{% endfor %}</datalist><br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
             </div>
         </div>
         <div class="sign-block">
             <div>Руководитель медицинской организации:</div>
             <div class="sign-line">
                 <span>{{ fld('sig_head', 'w150') }}<br><span class="muted small">(подпись)</span></span>
-                <span>{{ fld('fio_head', 'w300') }}<br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
+                <span><input type="text" class="fld w300" name="fio_head" list="fioHeadList" autocomplete="off"><datalist id="fioHeadList">{% for o in fio_head_options %}<option value="{{ o }}"></option>{% endfor %}</datalist><br><span class="muted small">(фамилия, имя, отчество (при наличии))</span></span>
             </div>
         </div>
         <div class="row">Дата заполнения: {{ fld('date_fill', 'w200 js-date') }}</div>

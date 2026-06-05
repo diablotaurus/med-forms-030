@@ -70,28 +70,35 @@ APP_VERSION = "0.1.4"
 # Поля, которые можно предзаполнять значениями по умолчанию из «Настроек»
 # (в карте они остаются редактируемыми).
 PREFILL_FIELDS = [
-    "org_info", "fio_doctor", "fio_head",                 # общие для обеих форм
+    "org_info",                                           # общее для обеих форм
     "p1", "p12", "p9", "p10", "p12b",                     # форма 030/у-Д/с
     "mo_pmsp_name", "mo_pmsp_addr", "edu_name",           # форма 030-ПО/у
     "edu_addr", "mo_osmotr",
 ]
-# Все ключи, редактируемые на странице «Настройки»
-# (+ smo_options — список страховых медицинских организаций для выпадающего списка).
-SETTINGS_KEYS = PREFILL_FIELDS + ["smo_options"]
+# Списки вариантов для выпадающих полей (по одному значению в строке):
+# страховые медицинские организации, Ф.И.О. врачей и руководителей.
+OPTION_KEYS = ["smo_options", "fio_doctor_options", "fio_head_options"]
+# Все ключи, редактируемые на странице «Настройки».
+SETTINGS_KEYS = PREFILL_FIELDS + OPTION_KEYS
 
 app = Flask(__name__)
 
 
 @app.context_processor
 def inject_globals():
-    """Глобальные значения для всех шаблонов (версия, список страховых организаций)."""
-    smo_options = []
-    try:
-        raw = get_setting("smo_options", "")
-        smo_options = [s.strip() for s in raw.splitlines() if s.strip()]
-    except Exception:
-        smo_options = []
-    return {"app_version": APP_VERSION, "smo_options": smo_options}
+    """Глобальные значения для всех шаблонов (версия и списки выпадающих полей)."""
+    def opts(key):
+        try:
+            raw = get_setting(key, "")
+            return [s.strip() for s in raw.splitlines() if s.strip()]
+        except Exception:
+            return []
+    return {
+        "app_version": APP_VERSION,
+        "smo_options": opts("smo_options"),
+        "fio_doctor_options": opts("fio_doctor_options"),
+        "fio_head_options": opts("fio_head_options"),
+    }
 
 
 # Секретный ключ генерируется заново при каждом запуске процесса.
