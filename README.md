@@ -91,9 +91,6 @@ python app.py
 
 Затем открыть в браузере: <http://127.0.0.1:5000>
 
-> На Linux/macOS вместо `\.venv\Scripts\Activate.ps1` используйте
-> `source .venv/bin/activate`.
-
 > ⚠️ `python app.py` — это сервер **разработки**. Для постоянной работы на
 > сервере используйте production-запуск (waitress) — см. ниже.
 
@@ -121,13 +118,46 @@ powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 
 База `base.db` создаётся автоматически при первом запуске рядом с `app.py`.
 
+## Развёртывание на Linux
+
+Для Ubuntu Server 24.04 LTS и Debian 12 подготовлен отдельный набор сценариев
+в [`scripts/linux/`](scripts/linux/). Рекомендуемая конфигурация одного
+независимого сервера: **2 vCPU, 2 ГБ RAM и 25 ГБ SSD**.
+
+Краткая установка:
+
+```bash
+sudo apt update
+sudo apt install -y python3 python3-venv git
+sudo git clone https://github.com/diablotaurus/med-forms-030.git /opt/med-forms-030
+sudo chown -R "$USER":"$USER" /opt/med-forms-030
+cd /opt/med-forms-030
+scripts/linux/setup.sh
+sudo scripts/linux/install-service.sh
+```
+
+Приложение запускается как служба `systemd` и автоматически стартует после
+перезагрузки. Ручное обновление с GitHub:
+
+```bash
+cd /opt/med-forms-030
+scripts/linux/update.sh
+```
+
+Полная инструкция: [`scripts/linux/README.md`](scripts/linux/README.md).
+Каждый сервер использует собственную локальную `base.db`; общий файл SQLite
+между серверами не применяется.
+
 ## Структура
 
 ```
 WebApp/
 ├── app.py                 # Flask-приложение, маршруты, работа с БД
+├── serve.py               # production-запуск через waitress
 ├── base.db                # база SQLite (создаётся автоматически)
 ├── requirements.txt
+├── scripts/               # развёртывание и обновление на Windows
+│   └── linux/             # Bash-скрипты и systemd для Linux
 ├── templates/
 │   ├── base.html
 │   ├── login.html         # страница входа
