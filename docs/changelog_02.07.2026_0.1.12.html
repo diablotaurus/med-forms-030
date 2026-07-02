@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>История разработки — med-forms-030 (v0.1.12)</title>
+<style>
+    :root{
+        --accent:#2f5d8c;--accent2:#244a70;--sep:#c9d4e0;--fill:#f5f8fc;
+        --grey:#666;--ok:#2e7d32;--add:#2f5d8c
+    }
+    *{box-sizing:border-box}
+    body{font-family:Arial,"Segoe UI",sans-serif;color:#16202b;line-height:1.55;
+        margin:0;background:#eef1f5}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+    header.doc{background:linear-gradient(135deg,#2f5d8c,#244a70);color:#fff;
+        border-radius:14px;padding:30px 32px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+    header.doc h1{margin:0 0 6px;font-size:26px}
+    header.doc .sub{opacity:.9;font-size:14px}
+    .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+        padding:4px 10px;border-radius:20px;font-size:12px}
+    .intro,.ver{background:#fff;border:1px solid var(--sep);border-radius:12px}
+    .intro{padding:20px 24px;margin-top:22px}
+    .intro h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
+    .release{background:#fff;border:2px solid var(--accent);border-radius:12px;
+        padding:20px 24px;margin-top:22px}
+    .release h2{margin:0 0 8px;color:var(--accent)}
+    h2.section{margin:34px 0 6px;font-size:20px;color:var(--accent2);
+        border-bottom:2px solid var(--sep);padding-bottom:6px}
+    .timeline{position:relative;margin-top:18px;padding-left:28px}
+    .timeline::before{content:"";position:absolute;left:9px;top:4px;bottom:4px;
+        width:2px;background:var(--sep)}
+    .ver{position:relative;margin:0 0 18px;padding:14px 18px 12px;
+        box-shadow:0 1px 4px rgba(0,0,0,.05)}
+    .ver::before{content:"";position:absolute;left:-23px;top:18px;width:12px;height:12px;
+        border-radius:50%;background:var(--accent);border:2px solid #fff;
+        box-shadow:0 0 0 2px var(--sep)}
+    .ver h3{margin:0 0 4px;font-size:16px}
+    .num{display:inline-block;background:var(--fill);color:var(--accent);
+        border:1px solid var(--sep);border-radius:6px;padding:1px 8px;font-size:13px;
+        margin-right:8px;font-variant-numeric:tabular-nums}
+    .ver ul{margin:8px 0 0;padding-left:20px}.ver li{margin:3px 0}
+    .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;
+        padding:1px 6px;margin-right:6px;vertical-align:1px}
+    .t-add{background:#eaf1fa;color:var(--add)}
+    .t-doc{background:#eef7ee;color:var(--ok)}
+    .files{color:var(--grey);font-size:12.5px;margin-top:6px}
+    code{background:var(--fill);border:1px solid var(--sep);border-radius:4px;
+        padding:0 5px;font-size:12.5px}
+    .prev{background:#fff;border:1px dashed var(--sep);border-radius:10px;
+        padding:14px 18px;margin-top:18px;color:#33414f;font-size:14px}
+    footer.doc{margin-top:40px;color:var(--grey);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="doc">
+    <h1>История разработки — med-forms-030</h1>
+    <div class="sub">Веб-приложение для учётных форм <b>N 030/у-Д/с</b> и
+        <b>N 030-ПО/у</b>: поддержка независимого развёртывания на Windows и Linux</div>
+    <div class="badges">
+        <span class="badge">Версия 0.1.12</span>
+        <span class="badge">02.07.2026</span>
+        <span class="badge">Лицензия GPL v3.0</span>
+        <span class="badge">Python · Flask · Waitress · SQLite · systemd</span>
+    </div>
+</header>
+
+<section class="intro">
+    <h2>О документе</h2>
+    <p>Продолжение конспекта разработки после версии <code>0.1.10</code>.
+       Этап <code>0.1.11</code> посвящён полноценной поддержке Linux-серверов,
+       а <code>0.1.12</code> фиксирует выпуск и документацию.</p>
+    <p>Обозначения: <span class="tag t-add">ДОБАВЛЕНО</span>
+       <span class="tag t-doc">ДОКУМЕНТАЦИЯ</span></p>
+    <div class="prev">Предыдущая часть истории:
+        <code>docs/changelog_05.06.2026_0.1.10.html</code> (0.1.5 → 0.1.10).
+        Начальные этапы находятся в changelog версий 0.1.0 и 0.1.4.</div>
+</section>
+
+<section class="release">
+    <h2>Версия 0.1.12 — кроссплатформенное развёртывание</h2>
+    <p>Приложение теперь можно штатно запускать не только на Windows Server,
+       но и на двух независимых Linux-серверах в разных зданиях. Каждый экземпляр
+       использует собственную локальную базу, настройки и пользователей.</p>
+    <ul>
+        <li>Поддержаны Ubuntu Server 24.04 LTS и Debian 12.</li>
+        <li>Добавлена служба <code>systemd</code> с автоматическим запуском.</li>
+        <li>Реализованы установка, запуск, обновление и резервное копирование.</li>
+        <li>Зафиксированы безопасные права и запрет запуска приложения от root.</li>
+    </ul>
+</section>
+
+<h2 class="section">Этапы разработки (0.1.11 → 0.1.12)</h2>
+<div class="timeline">
+    <div class="ver">
+        <h3><span class="num">0.1.11</span>Поддержка Linux-серверов</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span>
+                Создан отдельный комплект Bash-сценариев в <code>scripts/linux/</code>
+                для Ubuntu Server 24.04 LTS и Debian 12.</li>
+            <li><code>setup.sh</code> создаёт виртуальное окружение Python,
+                устанавливает зависимости и готовит рабочие каталоги.</li>
+            <li><code>start.sh</code> выполняет ручной production-запуск через Waitress.</li>
+            <li><code>install-service.sh</code> создаёт и запускает службу
+                <code>systemd</code>; приложение работает от обычного пользователя,
+                запуск от root заблокирован.</li>
+            <li><code>update.sh</code> останавливает службу, создаёт резервную копию
+                SQLite, получает код с GitHub, обновляет зависимости и запускает службу.</li>
+            <li><code>backup.sh</code> создаёт датированные копии <code>base.db</code>
+                и поддерживает ротацию по количеству сохранённых копий.</li>
+            <li><code>uninstall-service.sh</code> удаляет только службу, сохраняя код,
+                настройки и базу данных.</li>
+            <li>Добавлен <code>.gitattributes</code>: Bash-скрипты сохраняются с LF и
+                исполняемыми правами в Git.</li>
+            <li>Проверены Bash-синтаксис, исполняемые права и реальное создание бэкапа.</li>
+        </ul>
+        <div class="files">.gitattributes · README.md · scripts/linux/*.sh · scripts/linux/README.md</div>
+    </div>
+
+    <div class="ver">
+        <h3><span class="num">0.1.12</span>Документация и выпуск версии</h3>
+        <ul>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span>
+                Создан этот changelog с конспектом этапов 0.1.11 → 0.1.12.</li>
+            <li>Версия приложения поднята до <b>0.1.12</b> и отображается в интерфейсе.</li>
+            <li>Зафиксирована рекомендуемая конфигурация каждого независимого сервера:
+                2 vCPU, 2 ГБ RAM, 25 ГБ SSD и статический IP.</li>
+        </ul>
+        <div class="files">app.py · docs/changelog_02.07.2026_0.1.12.html</div>
+    </div>
+</div>
+
+<footer class="doc">
+    med-forms-030 · Copyright © 2026 diablotaurus · GNU GPL v3.0<br>
+    Документ сформирован 02.07.2026 · версия 0.1.12
+</footer>
+</div>
+</body>
+</html>
