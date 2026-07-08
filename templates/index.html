@@ -34,10 +34,10 @@
             {% for f in forms %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ f["patient_fio"] or "—" }}</td>
+                <td>{{ f["patient_fio"] or "—" }}{% if f["is_draft"] %} <span class="draft-badge">Черновик</span>{% endif %}</td>
                 <td>{{ f["birth_date"] or "—" }}</td>
                 <td>{{ f["created_at"] }}</td>
-                <td>{{ f["updated_at"] }}</td>
+                <td>{{ f["updated_at"] }}{% if f["updated_by"] %}<br><span class="muted small">{{ f["updated_by"] }}</span>{% endif %}</td>
                 <td class="actions">
                     <a class="btn" href="{{ url_for('form_edit', form_id=f['id']) }}">Открыть</a>
                     <a class="btn" target="formPrint" href="{{ url_for('form_print', form_id=f['id']) }}">Печать</a>

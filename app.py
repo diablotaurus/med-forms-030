@@ -36,7 +36,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (Flask, g, redirect, render_template, request, url_for, abort,
-                   session)
+                   session, jsonify)
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -123,8 +123,10 @@ def _refresh_session_timeout():
 # --------------------------------------------------------------------------
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(DB_PATH, timeout=10)
         g.db.row_factory = sqlite3.Row
+        g.db.execute("PRAGMA busy_timeout = 10000")
+        g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
 
 
@@ -136,7 +138,10 @@ def close_db(exc):
 
 
 def init_db():
-    db = sqlite3.connect(DB_PATH)
+    db = sqlite3.connect(DB_PATH, timeout=10)
+    db.execute("PRAGMA busy_timeout = 10000")
+    db.execute("PRAGMA journal_mode = WAL")
+    db.execute("PRAGMA synchronous = NORMAL")
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS forms (
@@ -174,6 +179,14 @@ def init_db():
     if "deleted" not in cols:
         db.execute("ALTER TABLE forms ADD COLUMN deleted INTEGER DEFAULT 0")
         db.execute("UPDATE forms SET deleted = 0 WHERE deleted IS NULL")
+    if "is_draft" not in cols:
+        db.execute("ALTER TABLE forms ADD COLUMN is_draft INTEGER DEFAULT 0")
+        db.execute("UPDATE forms SET is_draft = 0 WHERE is_draft IS NULL")
+    if "revision" not in cols:
+        db.execute("ALTER TABLE forms ADD COLUMN revision INTEGER DEFAULT 1")
+        db.execute("UPDATE forms SET revision = 1 WHERE revision IS NULL")
+    if "updated_by" not in cols:
+        db.execute("ALTER TABLE forms ADD COLUMN updated_by TEXT DEFAULT ''")
     # завести пользователя по умолчанию, если пользователей ещё нет
     count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if count == 0:
@@ -206,7 +219,37 @@ def now():
 
 def collect_form():
     """Собрать все поля формы в словарь (отмеченные чекбоксы приходят как 'on')."""
-    return {k: v for k, v in request.form.items()}
+    return {k: v for k, v in request.form.items() if not k.startswith("_")}
+
+
+def requested_revision(default=0):
+    """Получить номер ревизии из формы; некорректное значение считать устаревшим."""
+    try:
+        return int(request.form.get("_revision", default))
+    except (TypeError, ValueError):
+        return -1
+
+
+def autosave_result(form_id, revision, saved_at):
+    return jsonify({
+        "ok": True,
+        "form_id": form_id,
+        "revision": revision,
+        "saved_at": saved_at,
+        "edit_url": url_for("form_edit", form_id=form_id),
+        "save_url": url_for("form_update", form_id=form_id),
+    })
+
+
+def conflict_result(row):
+    return jsonify({
+        "ok": False,
+        "conflict": True,
+        "revision": row["revision"] if row else None,
+        "updated_at": row["updated_at"] if row else None,
+        "updated_by": row["updated_by"] if row else None,
+        "message": "Карта уже изменена другим пользователем. Перезагрузите страницу.",
+    }), 409
 
 
 def get_setting(key, default=""):
@@ -367,7 +410,8 @@ def list_forms(ftype):
     _require_ftype(ftype)
     db = get_db()
     rows = db.execute(
-        "SELECT id, patient_fio, birth_date, created_at, updated_at "
+        "SELECT id, patient_fio, birth_date, created_at, updated_at, "
+        "is_draft, updated_by "
         "FROM forms WHERE form_type = ? AND deleted = 0 ORDER BY id ASC",
         (ftype,),
     ).fetchall()
@@ -412,7 +456,8 @@ def form_new(ftype):
         if value:
             data[field] = value
     return render_template(
-        meta["template"], mode="new", form_id=None, data=data, form_type=ftype
+        meta["template"], mode="new", form_id=None, data=data, form_type=ftype,
+        revision=0,
     )
 
 
@@ -425,19 +470,21 @@ def form_create(ftype):
     if errors:
         return render_template(
             meta["template"], mode="new", form_id=None, data=data,
-            form_type=ftype, errors=errors,
+            form_type=ftype, errors=errors, revision=0,
         ), 422
     db = get_db()
+    timestamp = now()
     cur = db.execute(
-        "INSERT INTO forms (patient_fio, birth_date, form_type, created_at, updated_at, data) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO forms (patient_fio, birth_date, form_type, created_at, updated_at, "
+        "data, is_draft, revision, updated_by) VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?)",
         (
             data.get("patient_fio", "").strip(),
             data.get("birth_date", "").strip(),
             ftype,
-            now(),
-            now(),
+            timestamp,
+            timestamp,
             json.dumps(data, ensure_ascii=False),
+            session["user"],
         ),
     )
     db.commit()
@@ -455,7 +502,8 @@ def form_edit(form_id):
     meta = _require_ftype(ftype)
     data = json.loads(row["data"] or "{}")
     return render_template(
-        meta["template"], mode="edit", form_id=form_id, data=data, form_type=ftype
+        meta["template"], mode="edit", form_id=form_id, data=data, form_type=ftype,
+        revision=row["revision"], is_draft=bool(row["is_draft"]),
     )
 
 
@@ -469,25 +517,106 @@ def form_update(form_id):
     ftype = row["form_type"] or DEFAULT_FORM_TYPE
     meta = _require_ftype(ftype)
     data = collect_form()
+    expected_revision = requested_revision(row["revision"])
     errors = validate_form(data)
     if errors:
         return render_template(
             meta["template"], mode="edit", form_id=form_id, data=data,
-            form_type=ftype, errors=errors,
+            form_type=ftype, errors=errors, revision=expected_revision,
+            is_draft=bool(row["is_draft"]),
         ), 422
-    db.execute(
-        "UPDATE forms SET patient_fio = ?, birth_date = ?, updated_at = ?, data = ? "
-        "WHERE id = ?",
+    cur = db.execute(
+        "UPDATE forms SET patient_fio = ?, birth_date = ?, updated_at = ?, data = ?, "
+        "is_draft = 0, revision = revision + 1, updated_by = ? "
+        "WHERE id = ? AND revision = ? AND deleted = 0",
         (
             data.get("patient_fio", "").strip(),
             data.get("birth_date", "").strip(),
             now(),
             json.dumps(data, ensure_ascii=False),
+            session["user"],
             form_id,
+            expected_revision,
+        ),
+    )
+    if cur.rowcount != 1:
+        db.rollback()
+        latest = db.execute("SELECT * FROM forms WHERE id = ?", (form_id,)).fetchone()
+        editor = latest["updated_by"] if latest else "другим пользователем"
+        errors = [
+            f"Карта была изменена пользователем «{editor}» после её открытия. "
+            "Ваши данные не перезаписали чужие изменения. Перезагрузите страницу."
+        ]
+        return render_template(
+            meta["template"], mode="edit", form_id=form_id, data=data,
+            form_type=ftype, errors=errors, revision=expected_revision,
+            is_draft=bool(row["is_draft"]), conflict=True,
+        ), 409
+    db.commit()
+    return redirect(url_for("form_edit", form_id=form_id))
+
+
+@app.route("/forms/<ftype>/autosave", methods=["POST"])
+@login_required
+def form_autosave_create(ftype):
+    """Создать черновик при первом автосохранении новой карты."""
+    _require_ftype(ftype)
+    data = collect_form()
+    timestamp = now()
+    db = get_db()
+    cur = db.execute(
+        "INSERT INTO forms (patient_fio, birth_date, form_type, created_at, updated_at, "
+        "data, is_draft, revision, updated_by, deleted) "
+        "VALUES (?, ?, ?, ?, ?, ?, 1, 1, ?, 0)",
+        (
+            data.get("patient_fio", "").strip(),
+            data.get("birth_date", "").strip(),
+            ftype,
+            timestamp,
+            timestamp,
+            json.dumps(data, ensure_ascii=False),
+            session["user"],
         ),
     )
     db.commit()
-    return redirect(url_for("form_edit", form_id=form_id))
+    return autosave_result(cur.lastrowid, 1, timestamp)
+
+
+@app.route("/form/<int:form_id>/autosave", methods=["POST"])
+@login_required
+def form_autosave_update(form_id):
+    """Сохранить черновые данные, только если ревизия карты не изменилась."""
+    db = get_db()
+    row = db.execute("SELECT * FROM forms WHERE id = ?", (form_id,)).fetchone()
+    if row is None or row["deleted"]:
+        return jsonify({"ok": False, "message": "Карта не найдена."}), 404
+
+    expected_revision = requested_revision(-1)
+    if expected_revision != row["revision"]:
+        return conflict_result(row)
+
+    data = collect_form()
+    timestamp = now()
+    cur = db.execute(
+        "UPDATE forms SET patient_fio = ?, birth_date = ?, updated_at = ?, data = ?, "
+        "revision = revision + 1, updated_by = ? "
+        "WHERE id = ? AND revision = ? AND deleted = 0",
+        (
+            data.get("patient_fio", "").strip(),
+            data.get("birth_date", "").strip(),
+            timestamp,
+            json.dumps(data, ensure_ascii=False),
+            session["user"],
+            form_id,
+            expected_revision,
+        ),
+    )
+    if cur.rowcount != 1:
+        db.rollback()
+        latest = db.execute("SELECT * FROM forms WHERE id = ?", (form_id,)).fetchone()
+        return conflict_result(latest)
+    db.commit()
+    return autosave_result(form_id, expected_revision + 1, timestamp)
 
 
 @app.route("/form/<int:form_id>/print", methods=["GET"])
@@ -501,7 +630,8 @@ def form_print(form_id):
     meta = _require_ftype(ftype)
     data = json.loads(row["data"] or "{}")
     return render_template(
-        meta["template"], mode="print", form_id=form_id, data=data, form_type=ftype
+        meta["template"], mode="print", form_id=form_id, data=data, form_type=ftype,
+        revision=row["revision"], is_draft=bool(row["is_draft"]),
     )
 
 

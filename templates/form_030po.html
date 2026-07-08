@@ -27,7 +27,8 @@
         <a class="btn" target="formPrint" href="{{ url_for('form_print', form_id=form_id) }}">🖨 Печать</a>
         {% endif %}
     {% endif %}
-    <span class="muted toolbar-title">Учётная форма N 030-ПО/у {% if form_id %}· карта №{{ form_id }}{% endif %}</span>
+    {% if mode != 'print' %}<span id="autosaveStatus" class="autosave-status">Автосохранение включено</span>{% endif %}
+    <span id="toolbarTitle" class="muted toolbar-title">Учётная форма N 030-ПО/у {% if form_id %}· карта №{{ form_id }}{% endif %}{% if is_draft %} · черновик{% endif %}</span>
     {% if mode != 'print' %}
     <a class="user-link" href="{{ url_for('change_password') }}" title="Сменить пароль">{{ session.user }}</a>
     <a class="btn" href="{{ url_for('logout') }}">Выйти</a>
@@ -36,6 +37,7 @@
 
 <form id="cardForm" method="post"
       action="{% if mode == 'new' %}{{ url_for('form_create', ftype=form_type) }}{% else %}{{ url_for('form_update', form_id=form_id) }}{% endif %}">
+<input type="hidden" name="_revision" id="formRevision" value="{{ revision | default(0) }}">
 <div class="sheet">
 
     {% if errors %}
@@ -282,6 +284,10 @@
 <script>
     window.FORM_DATA = {{ data | tojson }};
     window.FORM_MODE = "{{ mode }}";
+    window.FORM_ID = {{ form_id | tojson }};
+    window.FORM_TYPE = {{ form_type | tojson }};
+    window.FORM_REVISION = {{ revision | default(0) }};
 </script>
 <script src="{{ url_for('static', filename='js/form_030po.js') }}"></script>
+<script src="{{ url_for('static', filename='js/autosave.js') }}"></script>
 {% endblock %}

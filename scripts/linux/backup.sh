@@ -13,7 +13,9 @@ fi
 mkdir -p backups
 STAMP="$(date +%Y%m%d_%H%M%S)"
 TARGET="backups/base_${STAMP}.db"
-cp --preserve=mode,timestamps base.db "$TARGET"
+PYTHON="$ROOT/.venv/bin/python"
+[[ -x "$PYTHON" ]] || PYTHON="$(command -v python3)"
+"$PYTHON" scripts/sqlite_backup.py base.db "$TARGET"
 echo "Резервная копия создана: $TARGET ($(du -h "$TARGET" | cut -f1))"
 
 if [[ "$KEEP" =~ ^[0-9]+$ ]] && (( KEEP > 0 )); then

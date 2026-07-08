@@ -7,7 +7,7 @@
 | `setup.ps1` / `setup.bat` | Первичная установка: окружение, зависимости, порт в брандмауэре |
 | `start.ps1` / `start.bat` | Запуск сервера (waitress) в окне (Ctrl+C — остановка) |
 | `update.ps1` / `update.bat` | **Ручное обновление с GitHub** (бэкап БД → git pull → зависимости → перезапуск) |
-| `backup.ps1` / `backup.bat` | Ручная резервная копия базы `base.db` в папку `backups\` |
+| `backup.ps1` / `backup.bat` | Согласованная резервная копия SQLite в папку `backups\` |
 | `install-task.ps1` / `install-task.bat` | **Автозапуск через Планировщик заданий (без NSSM, рекомендуется)** |
 | `uninstall-task.ps1` | Удаление задачи автозапуска |
 | `install-service.ps1` | Установка как службы Windows (альтернатива) — нужен NSSM |
@@ -133,6 +133,7 @@ powershell -ExecutionPolicy Bypass -File scripts\update.ps1
   (IIS с ARR/URL Rewrite или nginx) и настройте сертификат.
 - **Резервные копии.** В `base.db` хранятся все карты. Сделать копию вручную:
   `powershell -ExecutionPolicy Bypass -File scripts\backup.ps1` (или двойной клик
-  по `scripts\backup.bat`) — копия появится в папке `backups\`. Можно оставлять
+  по `scripts\backup.bat`) — копия появится в папке `backups\`. Используется
+  SQLite Backup API, поэтому в копию входят и последние WAL-транзакции. Можно оставлять
   только последние N копий: `scripts\backup.ps1 -Keep 30`. Перед каждым
   обновлением `update.ps1` тоже делает копию автоматически.

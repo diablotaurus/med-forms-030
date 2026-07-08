@@ -1,6 +1,6 @@
 ﻿# =====================================================================
 #  med-forms-030 — ручная резервная копия базы данных
-#  Копирует base.db в папку backups\ с отметкой даты и времени.
+#  Создаёт согласованную копию base.db через SQLite Backup API.
 #
 #  Запуск:  powershell -ExecutionPolicy Bypass -File scripts\backup.ps1
 #  Хранить только последние N копий:  ... scripts\backup.ps1 -Keep 30
@@ -19,7 +19,10 @@ if (-not (Test-Path "backups")) { New-Item -ItemType Directory "backups" | Out-N
 
 $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $dest  = "backups\base_$stamp.db"
-Copy-Item "base.db" $dest -Force
+$python = ".\.venv\Scripts\python.exe"
+if (-not (Test-Path $python)) { $python = "python" }
+& $python "scripts\sqlite_backup.py" "base.db" $dest
+if ($LASTEXITCODE -ne 0) { throw "Не удалось создать резервную копию базы." }
 
 $size = [math]::Round((Get-Item $dest).Length / 1KB, 1)
 Write-Host "Резервная копия создана: $dest ($size KB)" -ForegroundColor Green

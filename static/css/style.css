@@ -198,6 +198,29 @@ table.list td.actions { white-space: nowrap; display: flex; gap: 6px; }
     box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 .toolbar-title { margin-left: auto; }
+.autosave-status {
+    flex: 0 0 auto;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #eef2f5;
+    color: var(--grey);
+    font-size: 12px;
+    white-space: nowrap;
+}
+.autosave-status.pending, .autosave-status.saving { background: #fff6df; color: #7a5a00; }
+.autosave-status.saved { background: #e9f6ec; color: #226b31; }
+.autosave-status.error { background: #fdeaea; color: #a12626; font-weight: 600; }
+.draft-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #fff3cd;
+    color: #755700;
+    font-size: 11px;
+    font-weight: 700;
+    vertical-align: 1px;
+}
 
 /* ---------- лист формы ---------- */
 .sheet {

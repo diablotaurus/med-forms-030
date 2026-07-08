@@ -25,10 +25,7 @@ try { git --version | Out-Null } catch { throw "git не найден в PATH." 
 
 # 1) Резервная копия базы
 if (Test-Path "base.db") {
-    $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    if (-not (Test-Path "backups")) { New-Item -ItemType Directory "backups" | Out-Null }
-    Copy-Item "base.db" "backups\base_$stamp.db" -Force
-    Write-Host "Резервная копия базы: backups\base_$stamp.db" -ForegroundColor Green
+    & "$PSScriptRoot\backup.ps1"
 } else {
     Write-Host "Файл base.db не найден — пропускаю резервную копию."
 }

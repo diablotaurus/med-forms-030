@@ -1,5 +1,7 @@
 # --- Данные и секреты (НЕ публиковать) ---
 base.db
+base.db-wal
+base.db-shm
 *.db
 secret.key
 
