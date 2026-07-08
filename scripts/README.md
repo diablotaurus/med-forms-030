@@ -7,6 +7,8 @@
 | `setup.ps1` / `setup.bat` | Первичная установка: окружение, зависимости, порт в брандмауэре |
 | `start.ps1` / `start.bat` | Запуск сервера (waitress) в окне (Ctrl+C — остановка) |
 | `update.ps1` / `update.bat` | **Ручное обновление с GitHub** (бэкап БД → git pull → зависимости → перезапуск) |
+| `install-update-task.ps1` / `.bat` | Ночная автоматическая проверка и установка обновлений |
+| `uninstall-update-task.ps1` | Удаление задания автоматического обновления |
 | `backup.ps1` / `backup.bat` | Согласованная резервная копия SQLite в папку `backups\` |
 | `install-task.ps1` / `install-task.bat` | **Автозапуск через Планировщик заданий (без NSSM, рекомендуется)** |
 | `uninstall-task.ps1` | Удаление задачи автозапуска |
@@ -119,6 +121,29 @@ powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 
 > Данные (`base.db`, `secret.key`, `backups\`, `logs\`) при обновлении
 > **не затрагиваются** — они не отслеживаются git. Обновляется только код.
+
+## Автоматическое ночное обновление
+
+После проверки ручного обновления можно установить отдельное задание
+Планировщика. PowerShell запустите **от имени администратора**:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-update-task.ps1 -Time "03:00"
+```
+
+Или дважды кликните `scripts\install-update-task.bat` — по умолчанию проверка
+выполняется ежедневно в 03:00. Задание работает от `SYSTEM` и не требует входа
+пользователя. Журналы последних 30 запусков: `logs\update_*.log`.
+
+Если нового коммита нет, приложение не останавливается. Если установка новой
+версии завершилась ошибкой, скрипт возвращает предыдущий коммит и запускает
+приложение обратно.
+
+Удалить расписание:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\uninstall-update-task.ps1
+```
 
 ---
 

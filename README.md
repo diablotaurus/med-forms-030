@@ -123,6 +123,12 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1   # запуск
 powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 ```
 
+Для ежедневной автоматической проверки в 03:00:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-update-task.ps1 -Time "03:00"
+```
+
 База `base.db` создаётся автоматически при первом запуске рядом с `app.py`.
 
 ## Развёртывание на Linux
@@ -154,6 +160,12 @@ scripts/linux/update.sh
 Полная инструкция: [`scripts/linux/README.md`](scripts/linux/README.md).
 Каждый сервер использует собственную локальную `base.db`; общий файл SQLite
 между серверами не применяется.
+
+Автоматическая ночная проверка на Linux включается командой:
+
+```bash
+sudo scripts/linux/install-update-timer.sh 03:00
+```
 
 ## Структура
 
