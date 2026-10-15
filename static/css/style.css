@@ -181,7 +181,10 @@ body {
 table.list { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; }
 table.list th, table.list td { border: 1px solid var(--sep); padding: 8px 10px; text-align: left; font-size: 13px; }
 table.list th { background: var(--fill); }
-table.list td.actions { white-space: nowrap; display: flex; gap: 6px; }
+table.list td.actions { white-space: nowrap; width: 1%; }
+table.list td.actions .btn { margin-right: 6px; vertical-align: middle; }
+table.list td.actions form { display: inline-block !important; margin: 0; vertical-align: middle; }
+table.list td.actions form .btn { margin-right: 0; }
 .empty { margin-top: 30px; color: var(--grey); }
 
 /* ---------- панель инструментов формы ---------- */
