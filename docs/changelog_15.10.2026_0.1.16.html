@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>История разработки — med-forms-030 (v0.1.16)</title>
+<style>
+    :root{--accent:#2f5d8c;--accent2:#244a70;--sep:#c9d4e0;--fill:#f5f8fc;
+        --grey:#666;--ok:#2e7d32;--fix:#9a6700}
+    *{box-sizing:border-box}
+    body{font-family:Arial,"Segoe UI",sans-serif;color:#16202b;line-height:1.55;
+        margin:0;background:#eef1f5}
+    .wrap{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+    header.doc{background:linear-gradient(135deg,#2f5d8c,#244a70);color:#fff;
+        border-radius:14px;padding:30px 32px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+    header.doc h1{margin:0 0 6px;font-size:26px}.sub{opacity:.9;font-size:14px}
+    .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+        padding:4px 10px;border-radius:20px;font-size:12px}
+    .intro,.ver,.release{background:#fff;border:1px solid var(--sep);border-radius:12px}
+    .intro{padding:20px 24px;margin-top:22px}.intro h2{margin:0 0 10px;font-size:18px;color:var(--accent)}
+    .release{border:2px solid var(--accent);padding:20px 24px;margin-top:22px}
+    .release h2{margin:0 0 8px;color:var(--accent)}
+    h2.section{margin:34px 0 6px;font-size:20px;color:var(--accent2);
+        border-bottom:2px solid var(--sep);padding-bottom:6px}
+    .timeline{position:relative;margin-top:18px;padding-left:28px}
+    .timeline::before{content:"";position:absolute;left:9px;top:4px;bottom:4px;
+        width:2px;background:var(--sep)}
+    .ver{position:relative;margin:0 0 18px;padding:14px 18px 12px;
+        box-shadow:0 1px 4px rgba(0,0,0,.05)}
+    .ver::before{content:"";position:absolute;left:-23px;top:18px;width:12px;height:12px;
+        border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 2px var(--sep)}
+    .ver h3{margin:0 0 4px;font-size:16px}
+    .num{display:inline-block;background:var(--fill);color:var(--accent);border:1px solid var(--sep);
+        border-radius:6px;padding:1px 8px;font-size:13px;margin-right:8px}
+    .ver ul,.release ul{margin:8px 0 0;padding-left:20px}.ver li,.release li{margin:3px 0}
+    .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;
+        padding:1px 6px;margin-right:6px;vertical-align:1px}
+    .t-add{background:#eaf1fa;color:var(--accent)}
+    .t-fix{background:#fff3cd;color:var(--fix)}.t-doc{background:#eef7ee;color:var(--ok)}
+    .files{color:var(--grey);font-size:12.5px;margin-top:6px}
+    code{background:var(--fill);border:1px solid var(--sep);border-radius:4px;padding:0 5px;font-size:12.5px}
+    .prev{background:#fff;border:1px dashed var(--sep);border-radius:10px;
+        padding:14px 18px;margin-top:18px;color:#33414f;font-size:14px}
+    footer.doc{margin-top:40px;color:var(--grey);font-size:13px;text-align:center}
+</style>
+</head>
+<body><div class="wrap">
+<header class="doc">
+    <h1>История разработки — med-forms-030</h1>
+    <div class="sub">Веб-приложение для учётных форм <b>N 030/у-Д/с</b> и
+        <b>N 030-ПО/у</b>: устойчивость обновления к смене версии Python</div>
+    <div class="badges">
+        <span class="badge">Версия 0.1.16</span><span class="badge">15.10.2026</span>
+        <span class="badge">Лицензия GPL v3.0</span>
+        <span class="badge">Flask · Waitress · SQLite · systemd</span>
+    </div>
+</header>
+
+<section class="intro">
+    <h2>О документе</h2>
+    <p>Продолжение истории после версии <code>0.1.15</code>. Версия
+       <code>0.1.16</code> закрывает эксплуатационную проблему, выявленную на
+       рабочем сервере: после апгрейда ОС (<b>Ubuntu 20.04 → 22.04</b>, системный
+       Python <b>3.8 → 3.10</b>) виртуальное окружение <code>.venv</code> перестало
+       запускаться — прежний интерпретатор исчез, служба не стартовала, сайт отдавал
+       <code>ERR_CONNECTION_REFUSED</code>. Теперь скрипты обновления сами обнаруживают
+       и устраняют это.</p>
+    <p>Обозначения: <span class="tag t-add">ДОБАВЛЕНО</span>
+       <span class="tag t-fix">ИСПРАВЛЕНО</span>
+       <span class="tag t-doc">ДОКУМЕНТАЦИЯ</span></p>
+    <div class="prev">Предыдущая часть:
+        <code>docs/changelog_14.07.2026_0.1.15.html</code> (0.1.15).</div>
+</section>
+
+<section class="release">
+    <h2>Версия 0.1.16 — самовосстановление окружения при обновлении Python</h2>
+    <p>Скрипты обновления (<code>scripts/linux/update.sh</code> и
+       <code>scripts/update.ps1</code>) теперь в начале проверяют, действительно ли
+       запускается интерпретатор из <code>.venv</code>. Если окружение сломано или
+       отсутствует — оно пересоздаётся, ставятся зависимости, приложение
+       перезапускается.</p>
+    <ul>
+        <li>Срабатывает <b>даже без новых коммитов</b> — поэтому ближайшее ночное
+            авто-обновление само поднимет сервер после апгрейда ОС/Python, без ручного
+            вмешательства.</li>
+        <li>Данные (<code>base.db</code>, резервные копии, логи) не затрагиваются —
+            пересоздаётся только виртуальное окружение.</li>
+        <li>Логика симметрична на обеих платформах: Linux (Bash/systemd) и Windows
+            (служба NSSM или задача Планировщика).</li>
+    </ul>
+</section>
+
+<h2 class="section">Этапы разработки (0.1.16)</h2>
+<div class="timeline">
+    <div class="ver">
+        <h3><span class="num">0.1.16</span>Самовосстановление .venv в скриптах обновления</h3>
+        <ul>
+            <li><span class="tag t-add">ДОБАВЛЕНО</span> Проверка работоспособности
+                <code>.venv</code> (реальный запуск интерпретатора) в начале обновления;
+                при поломке — автоматическое пересоздание окружения и переустановка
+                зависимостей.</li>
+            <li><span class="tag t-fix">ИСПРАВЛЕНО</span> После апгрейда ОС/Python
+                приложение больше не остаётся «лежать»: служба (Linux systemd, Windows
+                NSSM) или задача Планировщика перезапускается автоматически, в том числе
+                при отсутствии новых коммитов.</li>
+            <li>Сохранены защитные механизмы: резервная копия базы перед обновлением,
+                откат кода при ошибке, корректные права при запуске от SYSTEM/root.</li>
+            <li><span class="tag t-doc">ДОКУМЕНТАЦИЯ</span> Создан changelog выпуска
+                <code>0.1.16</code>; версия приложения поднята до <b>0.1.16</b> и
+                отображается в интерфейсе.</li>
+        </ul>
+        <div class="files">scripts/linux/update.sh · scripts/update.ps1 · app.py · docs/changelog_15.10.2026_0.1.16.html</div>
+    </div>
+</div>
+
+<footer class="doc">med-forms-030 · Copyright © 2026 diablotaurus · GNU GPL v3.0<br>
+Документ сформирован 15.10.2026 · версия 0.1.16</footer>
+</div></body></html>
