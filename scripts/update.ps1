@@ -17,6 +17,7 @@ $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 $serviceName = "med-forms-030"
 $appWasRunning = $false
+$venvPython = Join-Path $root ".venv\Scripts\python.exe"
 
 Write-Host "== Обновление med-forms-030 ==" -ForegroundColor Cyan
 
@@ -34,6 +35,49 @@ function Invoke-Git {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
     & git @GitArgs
     if ($LASTEXITCODE -ne 0) { throw "Команда git завершилась с ошибкой: git $GitArgs" }
+}
+
+# Исправно ли виртуальное окружение (его интерпретатор реально запускается).
+# После обновления Python прежний интерпретатор может исчезнуть — тогда .venv
+# ломается, и приложение/служба не стартует.
+function Test-Venv {
+    if (-not (Test-Path $venvPython)) { return $false }
+    try {
+        & $venvPython -c "import sys" 2>$null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    }
+}
+
+# Пересоздать .venv и переустановить зависимости (данные не затрагиваются).
+function Repair-Venv {
+    Write-Host "Пересоздаю виртуальное окружение (.venv) ..." -ForegroundColor Yellow
+    if (Test-Path ".venv") { Remove-Item ".venv" -Recurse -Force }
+    python -m venv .venv
+    if ($LASTEXITCODE -ne 0) { throw "Не удалось создать .venv. Установите Python 3.x (с галочкой 'Add Python to PATH')." }
+    & $venvPython -m pip install --upgrade pip
+    & ".\.venv\Scripts\pip.exe" install -r requirements.txt
+    if ($LASTEXITCODE -ne 0) { throw "Не удалось установить зависимости." }
+}
+
+# Самовосстановление окружения: если .venv отсутствует или сломан (например,
+# после обновления Python) — пересоздать и перезапустить приложение, даже
+# если новых коммитов нет (ближайшее обновление само вылечит сервер).
+if (-not (Test-Venv)) {
+    Write-Host "Виртуальное окружение отсутствует или повреждено (возможно, после обновления Python)." -ForegroundColor Yellow
+    try { python --version | Out-Null } catch { throw "Python не найден в PATH. Установите Python 3.x." }
+    Repair-Venv
+    $svc0  = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+    $task0 = Get-ScheduledTask -TaskName $serviceName -ErrorAction SilentlyContinue
+    if ($svc0) {
+        Write-Host "Перезапускаю службу $serviceName после пересоздания окружения ..."
+        Restart-Service $serviceName -ErrorAction SilentlyContinue
+    } elseif ($task0) {
+        Write-Host "Перезапускаю задачу Планировщика $serviceName после пересоздания окружения ..."
+        Stop-ScheduledTask  -TaskName $serviceName -ErrorAction SilentlyContinue
+        Start-ScheduledTask -TaskName $serviceName -ErrorAction SilentlyContinue
+    }
 }
 
 # Сначала проверить GitHub. Если изменений нет — не трогать работающее приложение.
